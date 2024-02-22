@@ -12,10 +12,12 @@ namespace VendorPortal.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<UserProfile> userManager;
+        private readonly IEmailServices _IEmailServices;
 
-        public AuthController(UserManager<UserProfile> userManager)
+        public AuthController(UserManager<UserProfile> userManager, IEmailServices IEmailServices)
         {
             this.userManager = userManager;
+            this._IEmailServices = IEmailServices;
         }
 
         
@@ -46,6 +48,15 @@ namespace VendorPortal.API.Controllers
                 vendorResult = await userManager.AddToRolesAsync(vendor, roles);
                 if (vendorResult.Succeeded)
                 {
+                    //Send Email to vendor
+                    string email = $@"Email: {vendorDto.Email}";
+                    string password = "password@1234";
+
+                    // Constructing the message using string interpolation
+                    string messageBody = $"Email: {email} && Password: {password}";
+                    var message = new Message(new string[] { email }, "Login Credentials", messageBody);
+
+                    _IEmailServices.SendMail(message);
                     return Ok(" Vendor is added !! ");
                 }
                 return BadRequest("Error, Roles is not added !!");
@@ -72,6 +83,18 @@ namespace VendorPortal.API.Controllers
                 response = await userManager.AddToRolesAsync(projectHead,roles);
                 if (response.Succeeded)
                 {
+                    //Send Email to Project Head
+
+                    string email = $@"Email: {projectHeadDto.Email}";
+                    string password = "password@1234";
+
+                    // Constructing the message using string interpolation
+                    string messageBody = $"Email: {email} && Password: {password}";
+
+
+                    var message = new Message(new string[] { email }, "Login Credentials", messageBody);
+
+                    _IEmailServices.SendMail(message);
                     return Ok("Project Head is Created !! ");
                 }
                 return BadRequest("Can not Assign Role to Project Head !! ");
