@@ -10,9 +10,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<VentorPortalDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("VendorPortalConnectionString")));
-
+builder.Services.AddDbContext<VendorPortalAuthDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("VendorPortalAuthConnectionString"),
+    new MySqlServerVersion(new Version(8,0,32)))
+) ;
 
 var app = builder.Build();
 
