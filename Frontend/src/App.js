@@ -21,7 +21,7 @@ function App() {
         
      <Sidebar/>
      </div>
-     <div className="center-pages">
+     <div className="center-pages">   
       <Routes>
         <Route exact path ="/Vendor" element={<Vendor/>}/> 
         <Route exact path ="/Projecthead" element={<Projecthead/>}/>
