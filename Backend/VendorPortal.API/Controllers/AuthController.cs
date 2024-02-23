@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using User.Management.Services.Models;
+using User.Management.Services.Services;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
 using VendorPortal.API.Models.Dto;
@@ -12,11 +15,13 @@ namespace VendorPortal.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<UserProfile> userManager;
+        private readonly VendorPortalDbContext dbContext;
         private readonly IEmailServices _IEmailServices;
 
-        public AuthController(UserManager<UserProfile> userManager, IEmailServices IEmailServices)
+        public AuthController(UserManager<UserProfile> userManager,VendorPortalDbContext dbContext, IEmailServices IEmailServices)
         {
             this.userManager = userManager;
+            this.dbContext = dbContext;
             this._IEmailServices = IEmailServices;
         }
 
@@ -48,15 +53,28 @@ namespace VendorPortal.API.Controllers
                 vendorResult = await userManager.AddToRolesAsync(vendor, roles);
                 if (vendorResult.Succeeded)
                 {
+                    UserProfile user= await userManager.FindByEmailAsync(vendorDto.Email);
+                    string vendorId = await userManager.GetUserIdAsync(user);
+
+                    var vendorCategory = new VendorCategory
+                    {
+                        VendorId = vendorId,
+                        CategoryId = vendorDto.Category
+                    };
+
+                    await dbContext.VendorCategories.AddAsync(vendorCategory);
+                    await dbContext.SaveChangesAsync();
+
                     //Send Email to vendor
                     string email = $@"Email: {vendorDto.Email}";
-                    string password = "password@1234";
+                    string password = vendorDto.Password;
 
                     // Constructing the message using string interpolation
                     string messageBody = $"Email: {email} && Password: {password}";
-                    var message = new Message(new string[] { email }, "Login Credentials", messageBody);
+                    var message = new Message(new string[] { vendorDto.Email }, "Login Credentials", messageBody);
 
                     _IEmailServices.SendMail(message);
+
                     return Ok(" Vendor is added !! ");
                 }
                 return BadRequest("Error, Roles is not added !!");
@@ -86,15 +104,16 @@ namespace VendorPortal.API.Controllers
                     //Send Email to Project Head
 
                     string email = $@"Email: {projectHeadDto.Email}";
-                    string password = "password@1234";
+                    string password = projectHeadDto.Password;
 
                     // Constructing the message using string interpolation
-                    string messageBody = $"Email: {email} && Password: {password}";
+                    string messageBody = $"Email: {projectHeadDto.Email} && Password: {password}";
 
 
-                    var message = new Message(new string[] { email }, "Login Credentials", messageBody);
+                    var message = new Message(new string[] { projectHeadDto.Email }, "Login Credentials", messageBody);
 
                     _IEmailServices.SendMail(message);
+                    
                     return Ok("Project Head is Created !! ");
                 }
                 return BadRequest("Can not Assign Role to Project Head !! ");
@@ -143,6 +162,26 @@ namespace VendorPortal.API.Controllers
 
         }
 
+        [HttpPost]
+        [Route("Create/Project")]
+        public async Task<IActionResult> CreateProject([FromBody]ProjectDto projectDto)
+        {
+
+
+            var project = new Project
+            {
+                ProjectHeadId = projectDto.ProjectHeadId,
+                ProjectHeadName = projectDto.ProjectHeadName,
+                Name = projectDto.Name,
+                ProjectStatus = projectDto.ProjectStatus,
+                CreatedOn = projectDto.CreatedOn,
+                Description = projectDto.Description
+            };
+
+            await dbContext.Projects.AddAsync(project);
+            await dbContext.SaveChangesAsync();
+            return Ok(projectDto);
+        }
 
     }
 }
