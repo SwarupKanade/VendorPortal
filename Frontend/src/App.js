@@ -1,22 +1,38 @@
+//import NavbarApp from "./Components/NavbarApp";
+import RfpRfqForm from "./Components/RfpRfqForm";
+import Sidebar from "./Components/Sidebar";
+import Vendor from "./Components/Vendor";
+import Projecthead from "./Components/Projecthead"
+import {BrowserRouter as Router,Routes,Route}  from "react-router-dom"
+import Project from "./Components/Project";
+import NavbarApp from "./Components/NavbarApp";
+//import CreateHead from "./CreateHead";
+
 function App() {
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            Welcome to Student Management asp.net
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Explore and enjoy our content.
-          </p>
-          <a
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mt-4"
-            href="/login"
-          >
-            Login
-          </a>
-        </div>
+    <div>
+    <NavbarApp />
+    </div>
+
+    <div style={{ display:"flex" }}>
+    <Router>
+      <div >
+        
+     <Sidebar/>
+     </div>
+     <div className="center-pages">
+      <Routes>
+        <Route exact path ="/Vendor" element={<Vendor/>}/> 
+        <Route exact path ="/Projecthead" element={<Projecthead/>}/>
+        <Route exact path ="/RfpRfqForm" element={<RfpRfqForm/>}/>
+        <Route exact path ="/Project" element={<Project/>}/>
+
+      </Routes>
       </div>
+      </Router>
+      </div>
+     
     </>
   );
 }

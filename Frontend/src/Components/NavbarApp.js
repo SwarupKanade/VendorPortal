@@ -6,7 +6,7 @@ function NavbarApp(){
     <>
 
       
-    <div className="navbar">
+    <div className="navbar" >
             <div className="nav-left ">
                 <div className="logo">Admin Login</div>
             </div>

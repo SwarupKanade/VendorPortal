@@ -1,26 +1,31 @@
+import { Link } from 'react-router-dom';
+import './NavbarApp';
 
-import './NavApp';
+
 
 
 function Sidebar(){
-    //const [show,setShow]=useState(false);
+
+   
     return(
-        <div >
-        <div className="background"></div>
-          <div className="sideBar">
+        <div  >
+           
+          <div className="sideBar"  style={{height:900}}>
             <ul>
                 <li>
-                    <div className='operation'>Create Vendor Account</div>
+                    <Link to="/Vendor" className='operation'>Create Vendor Account</Link>
+                   
                 </li>
                 <li>
-                    <div className='operation'>Create Project Head</div>
+                    <Link to='/Projecthead' className='operation'>Create Project Head</Link>
                 </li>
                 <li>
                 
-                    <div className='operation'>Create Project</div>
+                    <Link to='/Project' className='operation'>Create Project</Link>
                 </li>
                 <li>
-                    <div className='operation'>Create Request for Proposal</div>
+                <Link to='/RfpRfqForm'  className='operation'>Create Request for Proposal</Link>
+               
                 </li>
             </ul>
           </div>

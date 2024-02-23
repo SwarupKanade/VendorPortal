@@ -1,25 +1,16 @@
 import './Style.css';
 
-const Admin = () => {
+const Vendor = () => {
     
   return (
     <div className="main">
     <div className="container">
-    <h1>Admin</h1>
+    <h1 >Admin</h1>
         <form>
           <table>
             <tbody>
                 
-              <tr>
-                <td className="td-class">
-                  <label htmlFor="id">Vendor Id:</label>
-                </td >
-                <td >
-                  <input className="input-class" 
-                    type="text"
-                  />
-                </td >
-              </tr>
+              
               <tr>
                 <td className="td-class">
                   <label htmlFor="name">Vendor Name:</label>
@@ -135,4 +126,4 @@ const Admin = () => {
   );
 };
 
-export default Admin;
+export default Vendor;

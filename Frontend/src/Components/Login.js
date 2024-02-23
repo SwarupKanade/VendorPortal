@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Style.css'; 
-import Admin from './Admin';
+//import Admin from './Admin';
 
 const Login = () => {
 
@@ -17,7 +17,7 @@ const Login = () => {
 
 <div className="container">
         {loggedIn ? (
-        <Admin />
+        <></> 
       ) : (
      <form onSubmit={handleLogin}>
         

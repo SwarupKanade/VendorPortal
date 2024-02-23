@@ -1,4 +1,14 @@
 
+.center-pages{
+  align-items: center;
+  justify-content: center;
+  margin: -5rem 20rem ;
+height: 10rem;
+}
+
+
+
+
 .main {
     margin: 20vh auto;
     padding: 20px;
