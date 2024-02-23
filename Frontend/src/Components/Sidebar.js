@@ -2,8 +2,6 @@ import { Link } from 'react-router-dom';
 import './NavbarApp';
 
 
-
-
 function Sidebar(){
 
    
