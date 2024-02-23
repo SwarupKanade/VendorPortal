@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import emailjs from 'emailjs-com';
 import 'react-phone-number-input/style.css'
-import PhoneInput from 'react-phone-number-input'
+import "react-phone-input-2/lib/style.css";
 import './Style.css'
 
 const Projecthead = () => {
@@ -39,7 +39,7 @@ const Projecthead = () => {
                                 </tr>
                                 <tr>
                                     <td className="td-class">
-                                        <label htmlFor="username">Contact person:</label>
+                                        <label htmlFor="username">Username:</label>
                                     </td>
                                     <td>
                                         <input type="text" placeholder="Enter Username" onChange={(e) => setusername(e.target.value)} name="username" className="input-class" />
@@ -58,12 +58,10 @@ const Projecthead = () => {
                                         <label htmlFor="phonenumber">Phone Number:</label>
                                     </td>
                                     <td>
-                                        <PhoneInput
-                                            placeholder="Enter phone number"
-                                            value={value}
-                                            onChange={setValue}
-                                            className="input-phone-number"
-                                        />
+                                        <div className='Phonenumber'>
+                                        <input type="tel" id="phone" name="phone" placeholder='Enter Phone Number' onChange={(e) => setemail(e.target.value)} className="input-class" pattern="[0-9]{3}[0-9]{3}[0-9]{4}" required  />
+                                        </div>
+                                    
                                     </td>
                                 </tr>
                                 <tr>

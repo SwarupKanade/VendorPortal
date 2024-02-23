@@ -9,12 +9,6 @@ body {
     font-family: Arial, sans-serif;
     padding: 0;
     margin: 0;
-    background-image:url('./background_image.jpeg');
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover; 
-    background-position: center center;
-    
   }
 .background{
     position: absolute; 
@@ -28,11 +22,16 @@ body {
     color: white;
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: space-between;
 }
 
-.nav-left{
-    display: flex;
+.logo{
+    font-size: 1.2rem;
+    margin-left: 20px;
+}
+
+.Profile{
+    margin-right: 20px;
 }
 
 .contact{
@@ -40,23 +39,23 @@ body {
 }
 
 
+
 .sideBar{
-    width: 30%;
+    width: 15vw;
     background-color: #265073;
     height: 100vh;
 }
 
+.operation{
+    font-size: 1rem;
+}
 ul{
     padding: 15px 0 0 15px;
     list-style: none;
 }
 li{
     text-align: start;
-    margin-top: 20px ;
-    font-size: 2rem;
+    margin-top: 30px ;
+    margin-right: 10px;
     display: flex;
-}
-h2{
-    font-size: 1.2rem;
-    margin-left: 20px;
 }

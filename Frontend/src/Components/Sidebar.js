@@ -1,5 +1,5 @@
 
-import './NavbarApp';
+import './NavApp';
 
 
 function Sidebar(){
@@ -10,19 +10,17 @@ function Sidebar(){
           <div className="sideBar">
             <ul>
                 <li>
-                    <h2>Create Vendor Account</h2>
+                    <div className='operation'>Create Vendor Account</div>
                 </li>
                 <li>
-                    
-                    <h2>Create Project Head</h2>
+                    <div className='operation'>Create Project Head</div>
                 </li>
                 <li>
                 
-                    <h2>Create Project</h2>
+                    <div className='operation'>Create Project</div>
                 </li>
                 <li>
-                    
-                    <h2>Create Request for Proposal</h2>
+                    <div className='operation'>Create Request for Proposal</div>
                 </li>
             </ul>
           </div>
