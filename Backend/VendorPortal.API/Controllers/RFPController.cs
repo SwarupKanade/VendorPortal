@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
@@ -8,14 +9,14 @@ namespace VendorPortal.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RPFController : ControllerBase
+    public class RFPController : ControllerBase
     {
 
         private readonly VendorPortalDbContext dbContext;
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public RPFController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
+        public RFPController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
             IHttpContextAccessor httpContextAccessor)
         {
             this.dbContext = dbContext;
@@ -70,6 +71,34 @@ namespace VendorPortal.API.Controllers
 
 
                 return Ok(rfp);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("All")]
+        public async Task<IActionResult> GetAll()
+        {
+            var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").ToListAsync();
+
+            if (rfpsResult != null)
+            {
+                return Ok(rfpsResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("VendorCategory/{id:Guid}")]
+        public async Task<IActionResult> GetAllByVendorCategory([FromRoute] Guid id)
+        {
+            var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").Where(x=>x.VendorCategoryId==id).ToListAsync();
+
+            if (rfpsResult != null)
+            {
+                return Ok(rfpsResult);
             }
 
             return BadRequest("Something went wrong");

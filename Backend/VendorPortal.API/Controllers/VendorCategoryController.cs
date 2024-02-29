@@ -38,5 +38,21 @@ namespace VendorPortal.API.Controllers
             return Ok(vendorCategory);
         }
 
+
+        [HttpGet]
+        [Route("All")]
+        public async Task<IActionResult> GetAll()
+        {
+            var vendorCategoryResult = await dbContext.VendorCategories.ToListAsync();
+
+            if (vendorCategoryResult != null) {
+                
+                return Ok(vendorCategoryResult);
+            }
+
+            return BadRequest("Something went wrong");
+                
+        }
+
     }
 }

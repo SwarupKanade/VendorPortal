@@ -1,14 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.Extensions.Hosting;
+using System.ComponentModel.DataAnnotations;
 
 namespace VendorPortal.API.Models.Domain
 {
     public class VendorCategory
     {
-        [Key]
-        public string VendorId { get; set; }
-        [Key]
-        public string CategoryId { get; set; }
-
-       // public Category Category { get; set; }
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+            public string? Description { get; set; }
+            public string DocumentList { get; set; }
     }
 }

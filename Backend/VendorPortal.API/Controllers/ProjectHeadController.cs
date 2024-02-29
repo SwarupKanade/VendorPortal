@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
 using VendorPortal.API.Models.DTO;
 
@@ -12,10 +13,13 @@ namespace VendorPortal.API.Controllers
     {
 
         private readonly UserManager<UserProfile> userManager;
+        private readonly EmailService emailService;
 
-        public ProjectHeadController(UserManager<UserProfile> userManager)
+
+        public ProjectHeadController(UserManager<UserProfile> userManager, EmailService emailService)
         {
             this.userManager = userManager;
+            this.emailService = emailService;
         }
 
 
@@ -43,6 +47,7 @@ namespace VendorPortal.API.Controllers
 
                 if (projectHeadResult.Succeeded)
                 {
+                    SendWelcomeEmail(newProjectHead);
                     return Ok("ProjectHead was registered! Please login.");
                 }
             }
@@ -63,6 +68,7 @@ namespace VendorPortal.API.Controllers
                 {
                     Id = projectHeadResult.Id,
                     Name = projectHeadResult.Name,
+                    Email = projectHeadResult.Email,
                     PhoneNumber = projectHeadResult.PhoneNumber,
 
                 };
@@ -83,18 +89,25 @@ namespace VendorPortal.API.Controllers
 
             if (projectHeadResult != null)
             {
+                if (projectHeadUpdateDto.NewPassword != "")
+                {
+                    var passResult = await userManager.ChangePasswordAsync(projectHeadResult, projectHeadUpdateDto.CurrentPassword, projectHeadUpdateDto.NewPassword);
+                    if (!passResult.Succeeded)
+                    {
+                        return BadRequest(passResult.Errors);
+                    }
+                }
                 projectHeadResult.Name = projectHeadUpdateDto.Name;
                 projectHeadResult.PhoneNumber = projectHeadUpdateDto.PhoneNumber;
 
-                await userManager.ChangePasswordAsync(projectHeadResult, projectHeadUpdateDto.CurrentPassword, projectHeadUpdateDto.Password);
-
-
+              
                 await userManager.UpdateAsync(projectHeadResult);
 
                 var projectHead = new ProjectHeadResponseDto
                 {
                     Id = projectHeadResult.Id,
                     Name = projectHeadResult.Name,
+                    Email = projectHeadResult.Email,
                     PhoneNumber = projectHeadResult.PhoneNumber,
 
                 };
@@ -123,6 +136,7 @@ namespace VendorPortal.API.Controllers
                     {
                         Id = projectHead.Id,
                         Name = projectHead.Name,
+                        Email = projectHead.Email,
                         PhoneNumber = projectHead.PhoneNumber,
 
                     };
@@ -135,6 +149,14 @@ namespace VendorPortal.API.Controllers
 
 
             return BadRequest("Something went wrong");
+        }
+
+        private void SendWelcomeEmail(UserProfile user)
+        {
+            string subject = $"Welcome to Our Application Project Head ID {user.Id}";
+            string body = $"Dear {user.Name},\n\nWelcome to our application! Your username is: {user.UserName} and your password is: Pass@123\n\nBest regards,\nYour Application Team";
+
+            emailService.SendEmail(user.Email, subject, body);
         }
     }
 }

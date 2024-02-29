@@ -4,12 +4,15 @@
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
-        public string DocumentPath { get; set; }
-        public string Project { get; set; }
-        public DateOnly EndDate { get;set; }
-        public string CategoryId { get; set; }
+        public string Document { get; set; }
+        public Guid ProjectId { get; set; }
+        public Guid VendorCategoryId { get; set; }
+        public DateTime EndDate { get;set; }
 
-        public Category Category { get; set; }
+        // Navigation properties
+        public VendorCategory VendorCategory { get; set; }
+        public Project Project { get; set; }
+
 
     }
 }
