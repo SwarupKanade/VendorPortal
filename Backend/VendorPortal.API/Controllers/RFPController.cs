@@ -81,8 +81,21 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery]string? filterOn, [FromQuery]string? filterVal)
         {
+
+            var rfps = dbContext.RFPs.Include("VendorCategory").Include("Project").AsQueryable();
+
+            if(String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
+            {
+                if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
+                {
+                    rfps = rfps.Where(x=>x.VendorCategory.Name == filterVal);
+                    var newRfps = await rfps.ToListAsync();
+                    return Ok(newRfps);
+                }
+            }
+
             var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").ToListAsync();
 
             if (rfpsResult != null)
