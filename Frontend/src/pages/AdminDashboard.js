@@ -16,7 +16,7 @@ export default function AdminDashboard() {
       text: "Users",
       icon: "bx bx-user",
       link: "#",
-      subItems: [{ text: "All", link: "allusers" }],
+      subItems: [{ text: "All", link: "allusers"}],
     },
     {
       text: "Vendor",
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
     },
     {
       text: "Request for Proposal",
-      icon: "ri ri-file-2-line-2",
+      icon: "ri-file-copy-2-line",
       link: "#",
       subItems: [
         { text: "All RFP", link: "rfp" },

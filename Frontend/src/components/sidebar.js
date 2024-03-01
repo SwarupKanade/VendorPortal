@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState, useEffect} from "react";
 import { Link } from "react-router-dom";
 
 export default function Sidebar({
@@ -6,20 +6,33 @@ export default function Sidebar({
   handleMenuVisible,
   menuItems,
 }) {
+  
+  const [openMenus, setOpenMenus] = useState([]);
+
+  const toggleMenu = (index) => {
+    // Toggle the open/closed state of the clicked menu item
+    setOpenMenus((prevOpenMenus) => {
+      const updatedOpenMenus = [...prevOpenMenus];
+      updatedOpenMenus[index] = !updatedOpenMenus[index];
+      return updatedOpenMenus;
+    });
+  };
+
   return (
     <div>
       <div
         class={`${
           isMenuVisible ? "" : "hidden"
-        } fixed left-0 top-0 w-64 h-full bg-[#f8f4f3] p-4 z-50 sidebar-menu transition-transform md:block overflow-y-auto`}
+        } fixed left-0 top-0 w-64 h-full  p-4 z-50 sidebar-menu transition-transform md:block overflow-y-auto bg-gradient-to-b from-cyan-200 via-blue-500 to-purple-500`}
+        
       >
         <a
           href="#"
           class="flex items-center justify-center pb-4 border-b border-b-gray-800"
         >
           <h2 class="font-bold text-2xl">
-            DASH
-            <span class="bg-[#f84525] text-white px-2 rounded-md">BOARD</span>
+            VENDOR
+            <span class="bg-[#f84525] text-white px-2 rounded-md">PORTAL</span>
             <button
               className="float-end pt-1 ml-2 md:hidden"
               onClick={handleMenuVisible}
@@ -42,22 +55,27 @@ export default function Sidebar({
             </button>
           </h2>
         </a>
-        <ul class="mt-4">
-          <span class="text-gray-400 font-bold">Menus</span>
+        <ul className="mt-4">
+          <span className="text-gray-400 font-bold">Menus</span>
           {menuItems.map((menuItem, index) => (
             <li key={index} className="my-2 group">
               <Link
                 to={menuItem.link}
                 className="flex font-semibold items-center py-2 px-4 text-gray-900 hover:bg-gray-950 hover:text-gray-100 rounded-md group-[.active]:bg-gray-800 group-[.active]:text-white group-[.selected]:bg-gray-950 group-[.selected]:text-gray-100 sidebar-dropdown-toggle"
+                onClick={() => toggleMenu(index)}
               >
                 <i className={menuItem.icon + " mr-3 text-lg"}></i>
                 <span className="text-sm">{menuItem.text}</span>
                 {menuItem.subItems && (
-                  <i className="ri-arrow-right-s-line ml-auto group-[.selected]:rotate-90"></i>
+                  <i
+                    className={`ri-arrow-right-s-line ml-auto ${
+                      openMenus[index] ? "rotate-90" : ""
+                    }`}
+                  ></i>
                 )}
               </Link>
-              {menuItem.subItems && (
-                <ul className="pl-7 mt-2 group-[.selected]:block">
+              {menuItem.subItems && openMenus[index] && (
+                <ul className="pl-7 mt-2">
                   {menuItem.subItems.map((subItem, subIndex) => (
                     <li key={subIndex} className="mb-4">
                       <Link
