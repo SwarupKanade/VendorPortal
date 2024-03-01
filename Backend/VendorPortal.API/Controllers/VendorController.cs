@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Net;
-using System.Reflection.Metadata;
+using Microsoft.EntityFrameworkCore;
+using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
 using VendorPortal.API.Models.DTO;
@@ -22,7 +19,8 @@ namespace VendorPortal.API.Controllers
         private readonly EmailService emailService;
 
         public VendorController(UserManager<UserProfile> userManager, IWebHostEnvironment webHostEnvironment,
-            IHttpContextAccessor httpContextAccessor, EmailService emailService)
+            IHttpContextAccessor httpContextAccessor, EmailService emailService,
+            VendorPortalDbContext dbContext)
         {
             this.userManager = userManager;
             this.webHostEnvironment = webHostEnvironment;
@@ -104,78 +102,28 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll([FromQuery] string? searchKey, [FromQuery] string? searchVal,
-            [FromQuery] string? filterOn, [FromQuery] string? filterVal)
+        public async Task<IActionResult> GetAll([FromQuery] string? nameVal, [FromQuery] string? orgVal,
+            [FromQuery] string? catVal)
         {
 
-            var vendorResult = await userManager.GetUsersInRoleAsync("Vendor");
-            
-            if(String.IsNullOrWhiteSpace(searchKey)==false && String.IsNullOrWhiteSpace(searchVal) == false)
+            var dbVendorResult = await userManager.GetUsersInRoleAsync("Vendor");
+            var vendorResult = dbVendorResult.AsQueryable();
+
+            if (String.IsNullOrWhiteSpace(nameVal) == false)
             {
-                if (searchKey.Equals("organizationName",StringComparison.OrdinalIgnoreCase))
-                {
-                    List<VendorResponseDto> allVendor = new List<VendorResponseDto>();
-                    foreach (var vendor in vendorResult)
-                    {
-                        if(vendor.OrganizationName == searchVal)
-                        {
-                           var newVendor = new VendorResponseDto
-                              {
-                                 Id = vendor.Id,
-                                 OrganizationName = vendor.OrganizationName,
-                                 Name = vendor.Name,
-                                 Email = vendor.Email,
-                                 PhoneNumber = vendor.PhoneNumber,
-                                 State = vendor.State,
-                                 Address = vendor.Address,
-                                 Pincode = (int)vendor.Pincode,
-                                 City = vendor.City,
-                                 DocumentPaths = vendor.DocumentPaths,
-                                 VendorCategory = vendor.VendorCategory,
-                              };
-                           allVendor.Add(newVendor);
-                        }
-                    }
-                    return Ok(allVendor);
-                }
+                vendorResult = vendorResult.Where(x => x.Name.ToLower().Contains(nameVal.ToLower()));
             }
 
-            if (String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
+            if (String.IsNullOrWhiteSpace(orgVal) == false)
             {
-                var category = await dbContext.VendorCategories.FirstOrDefaultAsync(x=>x.Name==filterVal);
-                if(category == null)
-                {
-                    return Ok("No Records Found !!");
-                }
-                if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
-                {
-                    List<VendorResponseDto> allVendor = new List<VendorResponseDto>();
-
-                    foreach (var vendor in vendorResult)
-                    {
-                        if (vendor.VendorCategoryId == category.Id)
-                        {
-                            var newVendor = new VendorResponseDto
-                            {
-                                Id = vendor.Id,
-                                OrganizationName = vendor.OrganizationName,
-                                Name = vendor.Name,
-                                Email = vendor.Email,
-                                PhoneNumber = vendor.PhoneNumber,
-                                State = vendor.State,
-                                Address = vendor.Address,
-                                Pincode = (int)vendor.Pincode,
-                                City = vendor.City,
-                                DocumentPaths = vendor.DocumentPaths,
-                                VendorCategory = vendor.VendorCategory,
-                            };
-                            allVendor.Add(newVendor);
-                        }
-                    }
-
-                    return Ok(allVendor);
-                }
+                vendorResult = vendorResult.Where(x => x.OrganizationName.ToLower().Contains(orgVal.ToLower()));
             }
+
+            if (String.IsNullOrWhiteSpace(catVal) == false)
+            {
+                vendorResult = vendorResult.Where(x => x.VendorCategory.Name.ToLower().Contains(catVal.ToLower()));
+            }
+
 
             if (vendorResult != null)
             {

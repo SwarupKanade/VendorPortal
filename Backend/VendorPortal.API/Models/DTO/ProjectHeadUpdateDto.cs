@@ -1,4 +1,6 @@
-﻿namespace VendorPortal.API.Models.DTO
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VendorPortal.API.Models.DTO
 {
     public class ProjectHeadUpdateDto
     {
