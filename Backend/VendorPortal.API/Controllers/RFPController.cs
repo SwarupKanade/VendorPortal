@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
@@ -48,6 +47,10 @@ namespace VendorPortal.API.Controllers
                 await dbContext.SaveChangesAsync();
                 return Ok(rfp);
             }
+            else
+            {
+                return BadRequest("Document File Error");
+            }
             return BadRequest("Something went wrong");
         }
 
@@ -78,8 +81,21 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery]string? filterOn, [FromQuery]string? filterVal)
         {
+
+            var rfps = dbContext.RFPs.Include("VendorCategory").Include("Project").AsQueryable();
+
+            if(String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
+            {
+                if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
+                {
+                    rfps = rfps.Where(x=>x.VendorCategory.Name == filterVal);
+                    var newRfps = await rfps.ToListAsync();
+                    return Ok(newRfps);
+                }
+            }
+
             var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").ToListAsync();
 
             if (rfpsResult != null)
@@ -106,9 +122,12 @@ namespace VendorPortal.API.Controllers
 
         private async Task<string> Upload(IFormFile document)
         {
-            System.Console.WriteLine(Path.GetFileName(document.FileName));
-            var localFilePath = Path.Combine(webHostEnvironment.ContentRootPath, "RFPDocuments",
-                document.FileName);
+            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "RFPDocuments");
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            var localFilePath = Path.Combine(folder, document.FileName);
 
             // Upload Image to Local Path
             using var stream = new FileStream(localFilePath, FileMode.Create);

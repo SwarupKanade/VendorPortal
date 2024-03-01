@@ -104,10 +104,78 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? searchKey, [FromQuery] string? searchVal,
+            [FromQuery] string? filterOn, [FromQuery] string? filterVal)
         {
 
             var vendorResult = await userManager.GetUsersInRoleAsync("Vendor");
+            
+            if(String.IsNullOrWhiteSpace(searchKey)==false && String.IsNullOrWhiteSpace(searchVal) == false)
+            {
+                if (searchKey.Equals("organizationName",StringComparison.OrdinalIgnoreCase))
+                {
+                    List<VendorResponseDto> allVendor = new List<VendorResponseDto>();
+                    foreach (var vendor in vendorResult)
+                    {
+                        if(vendor.OrganizationName == searchVal)
+                        {
+                           var newVendor = new VendorResponseDto
+                              {
+                                 Id = vendor.Id,
+                                 OrganizationName = vendor.OrganizationName,
+                                 Name = vendor.Name,
+                                 Email = vendor.Email,
+                                 PhoneNumber = vendor.PhoneNumber,
+                                 State = vendor.State,
+                                 Address = vendor.Address,
+                                 Pincode = (int)vendor.Pincode,
+                                 City = vendor.City,
+                                 DocumentPaths = vendor.DocumentPaths,
+                                 VendorCategory = vendor.VendorCategory,
+                              };
+                           allVendor.Add(newVendor);
+                        }
+                    }
+                    return Ok(allVendor);
+                }
+            }
+
+            if (String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
+            {
+                var category = await dbContext.VendorCategories.FirstOrDefaultAsync(x=>x.Name==filterVal);
+                if(category == null)
+                {
+                    return Ok("No Records Found !!");
+                }
+                if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
+                {
+                    List<VendorResponseDto> allVendor = new List<VendorResponseDto>();
+
+                    foreach (var vendor in vendorResult)
+                    {
+                        if (vendor.VendorCategoryId == category.Id)
+                        {
+                            var newVendor = new VendorResponseDto
+                            {
+                                Id = vendor.Id,
+                                OrganizationName = vendor.OrganizationName,
+                                Name = vendor.Name,
+                                Email = vendor.Email,
+                                PhoneNumber = vendor.PhoneNumber,
+                                State = vendor.State,
+                                Address = vendor.Address,
+                                Pincode = (int)vendor.Pincode,
+                                City = vendor.City,
+                                DocumentPaths = vendor.DocumentPaths,
+                                VendorCategory = vendor.VendorCategory,
+                            };
+                            allVendor.Add(newVendor);
+                        }
+                    }
+
+                    return Ok(allVendor);
+                }
+            }
 
             if (vendorResult != null)
             {
