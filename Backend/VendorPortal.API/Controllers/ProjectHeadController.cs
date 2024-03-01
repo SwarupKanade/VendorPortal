@@ -121,10 +121,16 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? nameVal)
         {
 
-            var projectHeadsResult = await userManager.GetUsersInRoleAsync("ProjectHead");
+            var dbProjectHeadsResult = await userManager.GetUsersInRoleAsync("ProjectHead");
+            var projectHeadsResult = dbProjectHeadsResult.AsQueryable();
+
+            if (String.IsNullOrWhiteSpace(nameVal) == false)
+            {
+                projectHeadsResult = projectHeadsResult.Where(x => x.Name.ToLower().Contains(nameVal.ToLower()));
+            }
 
             if (projectHeadsResult != null)
             {
