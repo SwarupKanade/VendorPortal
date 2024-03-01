@@ -23,6 +23,7 @@ import AddProject from "./pages/admin/AddProject";
 import Project from "./pages/admin/Project";
 import RFPA from "./pages/admin/RFP";
 import AddRFP from "./pages/admin/AddRFP";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 //Vendor
 import VendorDash from "./pages/vendor/VendorDash";
@@ -57,6 +58,7 @@ const App = () => {
           <Route path="create-project" element={<AddProject />} />
           <Route path="rfp" element={<RFPA />} />
           <Route path="create-rfp" element={<AddRFP />} />
+          <Route path="profile" element={<AdminProfile/>}/>
         </Route>
 
         <Route path="/vendor" element={<VendorDashboard />}>

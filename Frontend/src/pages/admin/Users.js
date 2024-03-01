@@ -101,7 +101,7 @@ export default function Users() {
                   </td>
                   <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
                     <div class="text-sm leading-5 text-blue-900">
-                      {vendor.address}
+                      {vendor.state}
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
@@ -112,7 +112,7 @@ export default function Users() {
 
                   <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">
                     <div class="text-sm leading-5 text-blue-900">
-                      {vendor.state}
+                      {vendor.address}
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-500">

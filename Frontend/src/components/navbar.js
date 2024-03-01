@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function Navbar({ handleMenuVisible }) {
   const navigate = useNavigate();
@@ -30,8 +31,36 @@ export default function Navbar({ handleMenuVisible }) {
     navigate("/login");
   };
 
+
+  /////////////////////////
+
+  const [profile, setProfileName] = useState({
+    name: "",
+  });
+
+  const fetchData = async () => {
+    try {
+      const sid = sessionStorage.getItem("sid");
+      const Role=sessionStorage.getItem("roles");
+      const result = await axios.get(
+        `${process.env.REACT_APP_API_URL}/${Role}/${sid}`
+      );
+
+      setProfileName(result.data);
+      
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
+  ///////////////////
+
   return (
-    <div class="py-2 px-6 bg-[#f8f4f3] flex items-center shadow-md shadow-black/5 sticky top-0 left-0 z-30">
+    <div class="py-2 px-6 bg-cyan-200 flex items-center shadow-md shadow-black/5 sticky top-0 left-0 z-30">
       <button
         type="button"
         class="text-lg text-gray-900 font-semibold sidebar-toggle md:hidden"
@@ -355,7 +384,7 @@ export default function Navbar({ handleMenuVisible }) {
               </div>
             </div>
             <div class="p-2 md:block text-left">
-              <h2 class="text-sm font-semibold text-gray-800">John Doe</h2>
+              <h2 class="text-sm font-semibold text-gray-800">{profile.name}</h2>
               <p class="text-xs text-gray-500">
                 {sessionStorage.getItem("roles")}
               </p>
