@@ -73,8 +73,59 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery]string?filterVal)
         {
+            var projects = dbContext.Projects.Include("UserProfile").AsQueryable();
+            if(projects == null)
+            {
+                return NotFound();
+            }
+
+            if(String.IsNullOrWhiteSpace(filterOn)==false && String.IsNullOrWhiteSpace(filterOn) == false)
+            {
+                if (filterOn.Equals("projectHead",StringComparison.OrdinalIgnoreCase))
+                {
+                    projects = projects.Where(x=>x.UserProfile.Name == filterVal);
+                    List<ProjectResponseDto> result = new List<ProjectResponseDto>();
+                    foreach (var project in projects)
+                    {
+                        var newProject = new ProjectResponseDto
+                        {
+                            Id = project.Id,
+                            Name = project.Name,
+                            ProjectStatus = project.ProjectStatus,
+                            CreatedOn = project.CreatedOn,
+                            Description = project.Description,
+                            ProjectHeadId = project.UserProfile.Id,
+                            ProjectHeadName = project.UserProfile.Name,
+                        };
+                        result.Add(newProject);
+                    }
+                    return Ok(result);
+                }
+                if(filterOn.Equals("projectStatus", StringComparison.OrdinalIgnoreCase))
+                {
+                    projects = projects.Where(x=>x.ProjectStatus==filterVal);
+                    List<ProjectResponseDto> result = new List<ProjectResponseDto>();
+                    foreach (var project in projects)
+                    {
+                        var newProject = new ProjectResponseDto
+                        {
+                            Id = project.Id,
+                            Name = project.Name,
+                            ProjectStatus = project.ProjectStatus,
+                            CreatedOn = project.CreatedOn,
+                            Description = project.Description,
+                            ProjectHeadId = project.UserProfile.Id,
+                            ProjectHeadName = project.UserProfile.Name,
+                        };
+                        result.Add(newProject);
+                    }
+                    return Ok(result);
+                }
+                var allprojects = await projects.ToListAsync();
+                return Ok(allprojects);
+            }
 
             var projectResult = await dbContext.Projects.Include(u => u.UserProfile).ToListAsync();
 
