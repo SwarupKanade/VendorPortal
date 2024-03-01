@@ -73,7 +73,7 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery]string?filterVal)
+        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery]string? filterVal)
         {
             var projects = dbContext.Projects.Include("UserProfile").AsQueryable();
             if(projects == null)
@@ -85,7 +85,7 @@ namespace VendorPortal.API.Controllers
             {
                 if (filterOn.Equals("projectHead",StringComparison.OrdinalIgnoreCase))
                 {
-                    projects = projects.Where(x=>x.UserProfile.Name == filterVal);
+                    projects = projects.Where(x=>x.UserProfile.Name.ToLower().Contains(filterVal.ToLower()));
                     List<ProjectResponseDto> result = new List<ProjectResponseDto>();
                     foreach (var project in projects)
                     {
@@ -105,7 +105,7 @@ namespace VendorPortal.API.Controllers
                 }
                 if(filterOn.Equals("projectStatus", StringComparison.OrdinalIgnoreCase))
                 {
-                    projects = projects.Where(x=>x.ProjectStatus==filterVal);
+                    projects = projects.Where(x=>x.ProjectStatus.ToLower().Contains(filterVal.ToLower()));
                     List<ProjectResponseDto> result = new List<ProjectResponseDto>();
                     foreach (var project in projects)
                     {
