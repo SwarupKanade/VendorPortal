@@ -90,7 +90,7 @@ namespace VendorPortal.API.Controllers
             {
                 if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
                 {
-                    rfps = rfps.Where(x=>x.VendorCategory.Name == filterVal);
+                    rfps = rfps.Where(x=>x.VendorCategory.Name.ToLower().Contains(filterVal.ToLower()));
                     var newRfps = await rfps.ToListAsync();
                     return Ok(newRfps);
                 }
