@@ -254,7 +254,7 @@ namespace VendorPortal.API.Controllers
 
             if (document.Length > 10485760)
             {
-                ModelState.AddModelError("file", "File size more than 10MB, please upload smaller size file.");
+                ModelState.AddModelError("file", "File size more than 10MB, please upload a smaller size file.");
             }
         }
 
