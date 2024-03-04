@@ -15,6 +15,8 @@ namespace VendorPortal.API.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<RFP> RFPs { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductSize> Sizes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -52,6 +54,8 @@ namespace VendorPortal.API.Data
             builder.Entity<UserProfile>().Navigation(e => e.VendorCategory).AutoInclude();
 
             builder.Entity<Project>().HasOne(u=>u.UserProfile).WithMany().HasForeignKey(u => u.ProjectHeadId);
+            
+            builder.Entity<Product>().HasOne(u => u.ProductSize).WithMany().HasForeignKey(u => u.SizeId);
         }
 
     }
