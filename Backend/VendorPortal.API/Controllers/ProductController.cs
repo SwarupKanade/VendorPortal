@@ -158,6 +158,7 @@ namespace VendorPortal.API.Controllers
                     productResult.UnitType = productResult.UnitType;
                     productResult.Specification = productUpdateDto.Specification;
 
+                    return Ok(productResult);
                 }
             }
 
