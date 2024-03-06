@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
@@ -51,7 +52,6 @@ namespace VendorPortal.API.Controllers
             {
                 return BadRequest("Document File Error");
             }
-            return BadRequest("Something went wrong");
         }
 
 
@@ -63,17 +63,7 @@ namespace VendorPortal.API.Controllers
 
             if (rfpResult != null)
             {
-                var rfp = new RFPResponseDto
-                {
-                    Title = rfpResult.Title,
-                    Document = rfpResult.Document,
-                    EndDate = rfpResult.EndDate,
-                    VendorCategory = rfpResult.VendorCategory,
-                    Project = rfpResult.Project,
-                };
-
-
-                return Ok(rfp);
+                return Ok(rfpResult);
             }
 
             return BadRequest("Something went wrong");
@@ -81,22 +71,23 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll([FromQuery]string? filterOn, [FromQuery]string? filterVal)
+        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterVal)
         {
 
-            var rfps = dbContext.RFPs.Include("VendorCategory").Include("Project").AsQueryable();
+            var rfpsResult = dbContext.RFPs.Include("VendorCategory").Include("Project").AsQueryable();
 
-            if(String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
+            if (String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
             {
+                if (filterOn.Equals("title", StringComparison.OrdinalIgnoreCase))
+                {
+                    rfpsResult = rfpsResult.Where(x => x.Title.ToLower().Contains(filterVal.ToLower())); 
+                }
+
                 if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
                 {
-                    rfps = rfps.Where(x=>x.VendorCategory.Name.ToLower().Contains(filterVal.ToLower()));
-                    var newRfps = await rfps.ToListAsync();
-                    return Ok(newRfps);
+                    rfpsResult = rfpsResult.Where(x => x.VendorCategory.Name.ToLower().Contains(filterVal.ToLower())); 
                 }
             }
-
-            var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").ToListAsync();
 
             if (rfpsResult != null)
             {
@@ -110,7 +101,7 @@ namespace VendorPortal.API.Controllers
         [Route("VendorCategory/{id:Guid}")]
         public async Task<IActionResult> GetAllByVendorCategory([FromRoute] Guid id)
         {
-            var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").Where(x=>x.VendorCategoryId==id).ToListAsync();
+            var rfpsResult = await dbContext.RFPs.Include("VendorCategory").Include("Project").Where(x => x.VendorCategoryId == id).ToListAsync();
 
             if (rfpsResult != null)
             {
@@ -122,7 +113,7 @@ namespace VendorPortal.API.Controllers
 
         private async Task<string> Upload(IFormFile document)
         {
-            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "RFPDocuments");
+            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "RFPDocuments");
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -133,7 +124,7 @@ namespace VendorPortal.API.Controllers
             using var stream = new FileStream(localFilePath, FileMode.Create);
             await document.CopyToAsync(stream);
 
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/RFPDocuments/{document.FileName}";
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/RFPDocuments/{document.FileName}";
 
             var FilePath = urlFilePath;
 

@@ -6,22 +6,18 @@ namespace VendorPortal.API.Models.Domain
 {
     public class Product
     {
-        [Key]
         public Guid Id { get; set; }
         public string Name { get; set; }
-
-        [NotMapped]
-        public IFormFile FormFile { get; set; }
         public string ImagePath { get; set; }
         public string? ShortDescription { get; set; }
         public string? LongDescription { get; set; }
         public string UnitType { get; set; }
-        public string? Specification { get; set; }
-        public string? ProductCategory { get; set; }
-        public string? SubCategory { get; set; }
+        public string Size { get; set; }
+        public string Specification { get; set; }
+        public Guid CategoryId { get; set; }
+        public Guid SubCategoryId { get; set; }
 
-        [ForeignKey("Id")]
-        public Guid  SizeId { get; set; }
-        public ProductSize ProductSize { get; set; }
+        public ProductCategory Category { get; set; }
+        public ProductCategory SubCategory { get; set; }
     }
 }

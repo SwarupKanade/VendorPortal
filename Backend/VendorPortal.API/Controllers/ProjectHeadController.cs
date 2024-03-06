@@ -121,39 +121,19 @@ namespace VendorPortal.API.Controllers
 
         [HttpGet]
         [Route("All")]
-        public async Task<IActionResult> GetAll([FromQuery]string? searchKey, [FromQuery]string? searchVal)
+        public async Task<IActionResult> GetAll([FromQuery] string? nameVal)
         {
+            var dbProjectHeadsResult = await userManager.GetUsersInRoleAsync("ProjectHead");
+            var projectHeadsResult = dbProjectHeadsResult.AsQueryable();
 
-            var projectHeadsResult = await userManager.GetUsersInRoleAsync("ProjectHead");
-
-            if(String.IsNullOrWhiteSpace(searchKey)==false && string.IsNullOrWhiteSpace(searchVal) == false)
+            if (String.IsNullOrWhiteSpace(nameVal) == false)
             {
-                if (searchKey.Equals("name",StringComparison.OrdinalIgnoreCase)) {
-                    List<ProjectHeadResponseDto> allProjectHead = new List<ProjectHeadResponseDto>();
-                    foreach (var projectHead in projectHeadsResult)
-                    {
-                        if (projectHead.Name.ToLower().Contains(searchVal.ToLower()))
-                        {
-                            var newProjectHead = new ProjectHeadResponseDto
-                            {
-                                Id = projectHead.Id,
-                                Name = projectHead.Name,
-                                Email = projectHead.Email,
-                                PhoneNumber = projectHead.PhoneNumber,
-
-                            };
-
-                            allProjectHead.Add(newProjectHead);
-                        }
-                    }
-
-                    return Ok(allProjectHead);
-                }
+                projectHeadsResult = projectHeadsResult.Where(x => x.Name.ToLower().Contains(nameVal.ToLower()));
             }
+
             if (projectHeadsResult != null)
             {
                 List<ProjectHeadResponseDto> allProjectHead = new List<ProjectHeadResponseDto>();
-
                 foreach (var projectHead in projectHeadsResult)
                 {
                     var newProjectHead = new ProjectHeadResponseDto
@@ -162,16 +142,12 @@ namespace VendorPortal.API.Controllers
                         Name = projectHead.Name,
                         Email = projectHead.Email,
                         PhoneNumber = projectHead.PhoneNumber,
-
                     };
-
                     allProjectHead.Add(newProjectHead);
                 }
-                
+
                 return Ok(allProjectHead);
             }
-
-
             return BadRequest("Something went wrong");
         }
 

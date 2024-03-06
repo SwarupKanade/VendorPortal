@@ -1,19 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using VendorPortal.API.Models.Domain;
+﻿using VendorPortal.API.Models.Domain;
 
 namespace VendorPortal.API.Models.DTO
 {
-    public class ProductDto
+    public class ProductResponseDto
     {
+        public Guid Id { get; set; }    
         public string Name { get; set; }
-        public IFormFile ImageFile { get; set; }
+        public string ImagePath { get; set; }
         public string ShortDescription { get; set; }
         public string LongDescription { get; set; }
         public string UnitType { get; set; }
         public string Size { get; set; }
         public string Specification { get; set; }
-        public Guid ProductCategoryId { get; set; }
+        public string Category { get; set; }
+        public Guid CategoryId { get; set; }
+        public string SubCategory { get; set; }
         public Guid SubCategoryId { get; set; }
     }
 }

@@ -1,10 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using VendorPortal.API.Models.Domain;
-
-namespace VendorPortal.API.Models.DTO
+﻿namespace VendorPortal.API.Models.DTO
 {
-    public class ProductDto
+    public class ProductUpdateDto
     {
         public string Name { get; set; }
         public IFormFile ImageFile { get; set; }
@@ -13,7 +9,5 @@ namespace VendorPortal.API.Models.DTO
         public string UnitType { get; set; }
         public string Size { get; set; }
         public string Specification { get; set; }
-        public Guid ProductCategoryId { get; set; }
-        public Guid SubCategoryId { get; set; }
     }
 }
