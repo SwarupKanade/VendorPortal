@@ -48,9 +48,8 @@ namespace VendorPortal.API.Controllers
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
 
-            var projectResult = await dbContext.Projects.Include(u=>u.UserProfile).FirstOrDefaultAsync(x => x.Id == id);
+            var projectResult = await dbContext.Projects.Include("UserProfile").FirstOrDefaultAsync(x => x.Id == id);
 
-           
 
             if (projectResult != null)
             {
