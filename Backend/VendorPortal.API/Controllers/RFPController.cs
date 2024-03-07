@@ -50,7 +50,7 @@ namespace VendorPortal.API.Controllers
             }
             else
             {
-                return BadRequest("Document File Error");
+                return BadRequest(ModelState);
             }
         }
 
@@ -135,7 +135,7 @@ namespace VendorPortal.API.Controllers
         {
             var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".pdf" };
 
-            if (!allowedExtensions.Contains(Path.GetExtension(document.FileName)))
+            if (!allowedExtensions.Contains(Path.GetExtension(document.FileName).ToLower()))
             {
                 ModelState.AddModelError("file", "Unsupported file extension");
             }

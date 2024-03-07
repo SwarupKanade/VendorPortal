@@ -52,7 +52,7 @@ namespace VendorPortal.API.Controllers
             }
             else
             {
-                return BadRequest("Document File Error");
+                return BadRequest(ModelState);
             }
         }
 
@@ -160,9 +160,14 @@ namespace VendorPortal.API.Controllers
 
                     return Ok(productResult);
                 }
+                return BadRequest("Something went wrong");
+            }
+            else
+            {
+                return BadRequest(ModelState);
             }
 
-            return BadRequest("Something went wrong");
+
         }
 
             private async Task<string> Upload(IFormFile document)
@@ -185,7 +190,7 @@ namespace VendorPortal.API.Controllers
         {
             var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".pdf" };
 
-            if (!allowedExtensions.Contains(Path.GetExtension(document.FileName)))
+            if (!allowedExtensions.Contains(Path.GetExtension(document.FileName).ToLower()))
             {
                 ModelState.AddModelError("file", "Unsupported file extension");
             }

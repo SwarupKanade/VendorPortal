@@ -77,7 +77,7 @@ namespace VendorPortal.API.Controllers
             var projectsResult = dbContext.Projects.Include("UserProfile").AsQueryable();
             
 
-            if(String.IsNullOrWhiteSpace(filterOn)==false && String.IsNullOrWhiteSpace(filterOn) == false)
+            if(String.IsNullOrWhiteSpace(filterOn)==false && String.IsNullOrWhiteSpace(filterVal) == false)
             {
                 if (filterOn.Equals("projectHead",StringComparison.OrdinalIgnoreCase))
                 {
