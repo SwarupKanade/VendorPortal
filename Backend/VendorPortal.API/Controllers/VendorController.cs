@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
@@ -47,6 +48,7 @@ namespace VendorPortal.API.Controllers
                 Email = vendorDto.Email,
                 UserName = vendorDto.Email,
                 VendorCategoryId = vendorDto.VendorCategoryId,
+                DocumentsUploadList = new List<DocumentsUpload>()
             };
 
             var vendorResult = await userManager.CreateAsync(newVendor, "Pass@123");
@@ -59,22 +61,22 @@ namespace VendorPortal.API.Controllers
 
                 if (vendorResult.Succeeded)
                 {
-                    var vendorCategory = dbContext.VendorCategories.Include(vc => vc.DocumentList).FirstOrDefault(vc => vc.Id == vendorDto.VendorCategoryId);
+                    var vendorCategory = dbContext.VendorCategories.Include(vc => vc.DocumentList).FirstOrDefault(vc => vc.Id == newVendor.VendorCategoryId);
 
                     if (vendorCategory != null)
                     {
-                        foreach (Document document in vendorCategory.DocumentList)
+                        foreach (VendorCategoryDocument document in vendorCategory.DocumentList)
                         {
                             var newDocumentsUploadStatus = new DocumentsUpload
                             {
                                 VendorId = newVendor.Id,
-                                DocumentId = document.Id,
+                                DocumentId = document.DocumentId,
                                 DocumentPath = null,
                                 Comment = "Upload",
-                                Status = false
+                                IsVerified = false
                             };
-
-                            dbContext.DocumentsUploads.Add(newDocumentsUploadStatus);
+                            newVendor.DocumentsUploadList.Add(newDocumentsUploadStatus);
+                            await dbContext.SaveChangesAsync();
                         }
                     }
                     SendWelcomeEmail(newVendor);
@@ -91,7 +93,7 @@ namespace VendorPortal.API.Controllers
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
 
-            var vendorResult = await userManager.FindByIdAsync(id);
+            var vendorResult = await dbContext.Users.Include(u => u.DocumentsUploadList).ThenInclude(du => du.Document).Include(u => u.VendorCategory).FirstOrDefaultAsync(x => x.Id == id);
 
             if (vendorResult != null)
             {
@@ -112,7 +114,7 @@ namespace VendorPortal.API.Controllers
                         DocumentId = qi.Document.Id,
                         DocumentName = qi.Document.Name,
                         DocumentPath = qi.DocumentPath,
-                        Status = qi.Status,
+                        IsVerified = qi.IsVerified,
                         Comment = qi.Comment,
                     }).ToList(),
                     VendorCategory = vendorResult.VendorCategory,
@@ -121,7 +123,6 @@ namespace VendorPortal.API.Controllers
 
                 return Ok(vendor);
             }
-
 
             return BadRequest("Something went wrong");
         }
@@ -155,35 +156,34 @@ namespace VendorPortal.API.Controllers
             if (vendorResult != null)
             {
                 List<VendorResponseDto> allVendor = new List<VendorResponseDto>();
-
                 foreach (var vendor in vendorResult)
                 {
+                    var singleVendor = await dbContext.Users.Include(u => u.DocumentsUploadList).ThenInclude(du => du.Document).Include(u => u.VendorCategory).FirstOrDefaultAsync(x => x.Id == vendor.Id);
                     var newVendor = new VendorResponseDto
                     {
-                        Id = vendor.Id,
-                        OrganizationName = vendor.OrganizationName,
-                        Name = vendor.Name,
-                        Email = vendor.Email,
-                        PhoneNumber = vendor.PhoneNumber,
-                        State = vendor.State,
-                        Address = vendor.Address,
-                        Pincode = (int)vendor.Pincode,
-                        City = vendor.City,
-                        DocumentsUploadList = vendor.DocumentsUploadList.Select(qi => new DocumentsUploadResponseDto
+                        Id = singleVendor.Id,
+                        OrganizationName = singleVendor.OrganizationName,
+                        Name = singleVendor.Name,
+                        Email = singleVendor.Email,
+                        PhoneNumber = singleVendor.PhoneNumber,
+                        State = singleVendor.State,
+                        Address = singleVendor.Address,
+                        Pincode = (int)singleVendor.Pincode,
+                        City = singleVendor.City,
+                        DocumentsUploadList = singleVendor.DocumentsUploadList.Select(qi => new DocumentsUploadResponseDto
                         {
                             Id = qi.Id,
                             DocumentId = qi.Document.Id,
                             DocumentName = qi.Document.Name,
                             DocumentPath = qi.DocumentPath,
-                            Status = qi.Status,
+                            IsVerified = qi.IsVerified,
                             Comment = qi.Comment,
                         }).ToList(),
-                        VendorCategory = vendor.VendorCategory,
+                        VendorCategory = singleVendor.VendorCategory,
                     };
 
                     allVendor.Add(newVendor);
                 }
-
                 return Ok(allVendor);
             }
 
@@ -194,7 +194,7 @@ namespace VendorPortal.API.Controllers
 
         [HttpPut]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> Update([FromRoute] string id, [FromForm] VendorUpdateDto vendorUpdateDto)
+        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] VendorUpdateDto vendorUpdateDto)
         {
             var vendorResult = await userManager.FindByIdAsync(id);
 
@@ -237,7 +237,7 @@ namespace VendorPortal.API.Controllers
                         DocumentId = qi.Document.Id,
                         DocumentName = qi.Document.Name,
                         DocumentPath = qi.DocumentPath,
-                        Status = qi.Status,
+                        IsVerified = qi.IsVerified,
                         Comment = qi.Comment,
                     }).ToList()
                 };
@@ -266,7 +266,6 @@ namespace VendorPortal.API.Controllers
                     string docPath = await Upload(vendorDocUpdateDto.Document, vendorDocUpdateDto.VendorId);
 
                     documentResult.DocumentPath = docPath;
-                    documentResult.Status = true;
                     documentResult.Comment = "Uploaded";
 
                     await dbContext.SaveChangesAsync();
@@ -293,8 +292,26 @@ namespace VendorPortal.API.Controllers
             {
                 var documentResult = await dbContext.DocumentsUploads.Include(x => x.Document).FirstOrDefaultAsync(x => x.DocumentId == vendorDocVerifyDto.DocumentId && x.VendorId == vendorDocVerifyDto.VendorId);
 
-                documentResult.Status = vendorDocVerifyDto.DocumentVerified;
+                documentResult.IsVerified = vendorDocVerifyDto.DocumentVerified;
                 documentResult.Comment = vendorDocVerifyDto.Comment;
+
+                var allDocs = await dbContext.DocumentsUploads.Where(x => x.VendorId == vendorDocVerifyDto.VendorId).ToListAsync();
+
+                if (allDocs != null)
+                {
+                    bool isVerify = true;
+                    foreach (var doc in allDocs)
+                    {
+                        if(!doc.IsVerified)
+                        {
+                            isVerify = false;
+                        }
+                    }
+
+                    var vendor = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == vendorDocVerifyDto.VendorId);
+                    vendor.IsVerified = isVerify;
+                    await dbContext.SaveChangesAsync();
+                }
 
                 await dbContext.SaveChangesAsync();
 

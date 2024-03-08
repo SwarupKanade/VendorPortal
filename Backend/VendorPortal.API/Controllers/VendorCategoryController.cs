@@ -30,20 +30,38 @@ namespace VendorPortal.API.Controllers
             {
                 Name = vendorCategoryDto.Name,
                 Description = vendorCategoryDto.Description,
-                DocumentList = vendorCategoryDto.DocumentList,
+                DocumentList = new List<VendorCategoryDocument>()
             };
 
             await dbContext.VendorCategories.AddAsync(vendorCategory);
             await dbContext.SaveChangesAsync();
+
+            foreach (var docId in vendorCategoryDto.DocumentList)
+            {
+                var doc = await dbContext.Documents.FirstOrDefaultAsync(d => d.Id == docId);
+
+                if (doc != null)
+                {
+                    vendorCategory.DocumentList.Add(new VendorCategoryDocument { Document = doc });
+                }
+                else
+                {
+                    return BadRequest($"Document with ID {docId} not found");
+                }
+            }
+
+            await dbContext.SaveChangesAsync();
+
             return Ok(vendorCategory);
         }
+
 
 
         [HttpGet]
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var vendorCategoryResult = await dbContext.VendorCategories.ToListAsync();
+            var vendorCategoryResult = await dbContext.VendorCategories.Include(x=>x.DocumentList).ToListAsync();
 
             if (vendorCategoryResult != null) {
                 

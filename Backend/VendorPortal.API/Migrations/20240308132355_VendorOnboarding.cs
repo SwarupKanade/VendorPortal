@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VendorPortal.API.Migrations
 {
     /// <inheritdoc />
-    public partial class producttables : Migration
+    public partial class VendorOnboarding : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,6 +25,19 @@ namespace VendorPortal.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Documents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Documents", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,8 +67,7 @@ namespace VendorPortal.API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DocumentList = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,9 +139,6 @@ namespace VendorPortal.API.Migrations
                     City = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Pincode = table.Column<int>(type: "int", nullable: true),
-                    DocumentPaths = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DocumentVerified = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DocumentComment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -153,6 +162,30 @@ namespace VendorPortal.API.Migrations
                         column: x => x.VendorCategoryId,
                         principalTable: "VendorCategories",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VendorCategoryDocuments",
+                columns: table => new
+                {
+                    DocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VendorCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VendorCategoryDocuments", x => new { x.DocumentId, x.VendorCategoryId });
+                    table.ForeignKey(
+                        name: "FK_VendorCategoryDocuments_Documents_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "Documents",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_VendorCategoryDocuments_VendorCategories_VendorCategoryId",
+                        column: x => x.VendorCategoryId,
+                        principalTable: "VendorCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -236,6 +269,34 @@ namespace VendorPortal.API.Migrations
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentsUploads",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    VendorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DocumentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DocumentPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentsUploads", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DocumentsUploads_AspNetUsers_VendorId",
+                        column: x => x.VendorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DocumentsUploads_Documents_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "Documents",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -345,6 +406,16 @@ namespace VendorPortal.API.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DocumentsUploads_DocumentId",
+                table: "DocumentsUploads",
+                column: "DocumentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentsUploads_VendorId",
+                table: "DocumentsUploads",
+                column: "VendorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductCategories_ParentCategoryId",
                 table: "ProductCategories",
                 column: "ParentCategoryId");
@@ -373,6 +444,11 @@ namespace VendorPortal.API.Migrations
                 name: "IX_RFPs_VendorCategoryId",
                 table: "RFPs",
                 column: "VendorCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VendorCategoryDocuments_VendorCategoryId",
+                table: "VendorCategoryDocuments",
+                column: "VendorCategoryId");
         }
 
         /// <inheritdoc />
@@ -394,10 +470,16 @@ namespace VendorPortal.API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "DocumentsUploads");
+
+            migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
                 name: "RFPs");
+
+            migrationBuilder.DropTable(
+                name: "VendorCategoryDocuments");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -407,6 +489,9 @@ namespace VendorPortal.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Projects");
+
+            migrationBuilder.DropTable(
+                name: "Documents");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

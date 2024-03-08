@@ -16,8 +16,9 @@ namespace VendorPortal.API.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<RFP> RFPs { get; set; }
         public DbSet<Document> Documents { get; set; }
-        public DbSet<DocumentsUpload> DocumentsUploads { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
+        public DbSet<VendorCategoryDocument> VendorCategoryDocuments { get; set; }
+        public DbSet<DocumentsUpload> DocumentsUploads { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
 
@@ -52,9 +53,8 @@ namespace VendorPortal.API.Data
                     NormalizedName="ProjectHead".ToUpper()
                 }
             };
-            builder.Entity<IdentityRole>().HasData(roles);
 
-            builder.Entity<UserProfile>().Navigation(e => e.VendorCategory).AutoInclude();
+            builder.Entity<IdentityRole>().HasData(roles);
 
             builder.Entity<Project>().HasOne(u=>u.UserProfile).WithMany().HasForeignKey(u => u.ProjectHeadId);
 
@@ -68,7 +68,17 @@ namespace VendorPortal.API.Data
 
             builder.Entity<UserProfile>().HasMany(d => d.DocumentsUploadList).WithOne(du => du.UserProfile).HasForeignKey(du => du.VendorId);
             
-            builder.Entity<UserProfile>().Navigation(e => e.DocumentsUploadList).AutoInclude();
+            builder.Entity<VendorCategoryDocument>().HasKey(vcd => new { vcd.DocumentId, vcd.VendorCategoryId });
+
+            builder.Entity<VendorCategoryDocument>()
+                .HasOne(vcd => vcd.Document)
+                .WithMany(d => d.VendorCategories)
+                .HasForeignKey(vcd => vcd.DocumentId);
+
+            builder.Entity<VendorCategoryDocument>()
+                .HasOne(vcd => vcd.VendorCategory)
+                .WithMany(vc => vc.DocumentList)
+                .HasForeignKey(vcd => vcd.VendorCategoryId);
         }
     }
 

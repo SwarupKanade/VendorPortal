@@ -178,6 +178,56 @@ namespace VendorPortal.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.Document", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Documents");
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.DocumentsUpload", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DocumentPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("VendorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("DocumentsUploads");
+                });
+
             modelBuilder.Entity("VendorPortal.API.Models.Domain.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -336,15 +386,6 @@ namespace VendorPortal.API.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DocumentComment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DocumentPaths")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DocumentVerified")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -425,10 +466,6 @@ namespace VendorPortal.API.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DocumentList")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -436,6 +473,21 @@ namespace VendorPortal.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("VendorCategories");
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.VendorCategoryDocument", b =>
+                {
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VendorCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("DocumentId", "VendorCategoryId");
+
+                    b.HasIndex("VendorCategoryId");
+
+                    b.ToTable("VendorCategoryDocuments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -487,6 +539,25 @@ namespace VendorPortal.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.DocumentsUpload", b =>
+                {
+                    b.HasOne("VendorPortal.API.Models.Domain.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VendorPortal.API.Models.Domain.UserProfile", "UserProfile")
+                        .WithMany("DocumentsUploadList")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("UserProfile");
                 });
 
             modelBuilder.Entity("VendorPortal.API.Models.Domain.Product", b =>
@@ -554,6 +625,40 @@ namespace VendorPortal.API.Migrations
                         .HasForeignKey("VendorCategoryId");
 
                     b.Navigation("VendorCategory");
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.VendorCategoryDocument", b =>
+                {
+                    b.HasOne("VendorPortal.API.Models.Domain.Document", "Document")
+                        .WithMany("VendorCategories")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VendorPortal.API.Models.Domain.VendorCategory", "VendorCategory")
+                        .WithMany("DocumentList")
+                        .HasForeignKey("VendorCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("VendorCategory");
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.Document", b =>
+                {
+                    b.Navigation("VendorCategories");
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.UserProfile", b =>
+                {
+                    b.Navigation("DocumentsUploadList");
+                });
+
+            modelBuilder.Entity("VendorPortal.API.Models.Domain.VendorCategory", b =>
+                {
+                    b.Navigation("DocumentList");
                 });
 #pragma warning restore 612, 618
         }
