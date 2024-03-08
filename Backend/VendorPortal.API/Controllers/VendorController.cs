@@ -103,6 +103,8 @@ namespace VendorPortal.API.Controllers
                     Address = vendorResult.Address,
                     Pincode = (int)vendorResult.Pincode,
                     City = vendorResult.City,
+                    DocumentVerified = vendorResult.DocumentVerified,
+                    DocumentComment = vendorResult.DocumentComment,
                     DocumentPaths = vendorResult.DocumentPaths,
                     VendorCategory = vendorResult.VendorCategory,
                 };
@@ -158,6 +160,8 @@ namespace VendorPortal.API.Controllers
                         Address = vendor.Address,
                         Pincode = (int)vendor.Pincode,
                         City = vendor.City,
+                        DocumentVerified = vendor.DocumentVerified,
+                        DocumentComment = vendor.DocumentComment,
                         DocumentPaths = vendor.DocumentPaths,
                         VendorCategory = vendor.VendorCategory,
                     };
@@ -212,6 +216,8 @@ namespace VendorPortal.API.Controllers
                     Pincode = (int)vendorResult.Pincode,
                     City = vendorResult.City,
                     VendorCategory = vendorResult.VendorCategory,
+                    DocumentVerified = vendorResult.DocumentVerified,
+                    DocumentComment = vendorResult.DocumentComment,
                     DocumentPaths = vendorResult.DocumentPaths,
                 };
 
@@ -266,6 +272,8 @@ namespace VendorPortal.API.Controllers
                     Pincode = (int)vendorResult.Pincode,
                     City = vendorResult.City,
                     VendorCategory = vendorResult.VendorCategory,
+                    DocumentVerified = vendorResult.DocumentVerified,
+                    DocumentComment = vendorResult.DocumentComment,
                     DocumentPaths = vendorResult.DocumentPaths,
                 };
 
@@ -307,6 +315,8 @@ namespace VendorPortal.API.Controllers
                     Pincode = (int)vendorResult.Pincode,
                     City = vendorResult.City,
                     VendorCategory = vendorResult.VendorCategory,
+                    DocumentVerified = vendorResult.DocumentVerified,
+                    DocumentComment = vendorResult.DocumentComment,
                     DocumentPaths = vendorResult.DocumentPaths,
                 };
 
