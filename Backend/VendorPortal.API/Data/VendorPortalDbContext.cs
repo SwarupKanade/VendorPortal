@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 using System.Reflection.Emit;
 using VendorPortal.API.Models.Domain;
 
@@ -13,8 +14,9 @@ namespace VendorPortal.API.Data
         }
 
         public DbSet<Project> Projects { get; set; }
-        public DbSet<Document> Documents { get; set; }
         public DbSet<RFP> RFPs { get; set; }
+        public DbSet<Document> Documents { get; set; }
+        public DbSet<DocumentsUpload> DocumentsUploads { get; set; }
         public DbSet<VendorCategory> VendorCategories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
@@ -62,7 +64,12 @@ namespace VendorPortal.API.Data
 
             builder.Entity<ProductCategory>().HasOne(u => u.ParentCategory).WithMany().HasForeignKey(u => u.ParentCategoryId);
 
-        }
+            builder.Entity<DocumentsUpload>().HasOne(du => du.UserProfile).WithMany(v => v.DocumentsUploadList).HasForeignKey(du => du.VendorId);
 
+            builder.Entity<UserProfile>().HasMany(d => d.DocumentsUploadList).WithOne(du => du.UserProfile).HasForeignKey(du => du.VendorId);
+            
+            builder.Entity<UserProfile>().Navigation(e => e.DocumentsUploadList).AutoInclude();
+        }
     }
+
 }
