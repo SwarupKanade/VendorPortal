@@ -18,34 +18,6 @@ namespace VendorPortal.API.Controllers
             this.userManager = userManager;
         }
 
-        [HttpGet]
-        [Route("All")]
-        public async Task<IActionResult> GetAll()
-        {
-            var adminsResult = await userManager.GetUsersInRoleAsync("Admin");
-            if (adminsResult != null)
-            {
-                List<AdminResponseDto> allAdmins = new List<AdminResponseDto>();
-
-                foreach (var singleAdmin in adminsResult)
-                {
-                    var admin = new AdminResponseDto
-                    {
-                        Id = singleAdmin.Id,
-                        Name = singleAdmin.Name,
-                        Email = singleAdmin.Email,
-                        PhoneNumber = singleAdmin.PhoneNumber,
-                    };
-
-                    allAdmins.Add(admin);
-                }
-
-                return Ok(allAdmins);
-            }
-
-            return BadRequest("Something went wrong");
-        }
-
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register([FromBody] AdminDto adminDto)
@@ -57,7 +29,8 @@ namespace VendorPortal.API.Controllers
                 Name = adminDto.Name,
                 PhoneNumber = adminDto.PhoneNumber,
                 Email = adminDto.Email,
-               
+                IsVerified = true,
+
             };
 
             var adminResult = await userManager.CreateAsync(adminProfile, adminDto.Password);
@@ -94,7 +67,35 @@ namespace VendorPortal.API.Controllers
                 return Ok(admin);
             }
 
-            return BadRequest();
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("All")]
+        public async Task<IActionResult> GetAll()
+        {
+            var adminsResult = await userManager.GetUsersInRoleAsync("Admin");
+            if (adminsResult != null)
+            {
+                List<AdminResponseDto> allAdmins = new List<AdminResponseDto>();
+
+                foreach (var singleAdmin in adminsResult)
+                {
+                    var admin = new AdminResponseDto
+                    {
+                        Id = singleAdmin.Id,
+                        Name = singleAdmin.Name,
+                        Email = singleAdmin.Email,
+                        PhoneNumber = singleAdmin.PhoneNumber,
+                    };
+
+                    allAdmins.Add(admin);
+                }
+
+                return Ok(allAdmins);
+            }
+
+            return BadRequest("Something went wrong");
         }
 
     }

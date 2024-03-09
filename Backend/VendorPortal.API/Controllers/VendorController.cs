@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto;
 using System.Numerics;
 using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
@@ -48,7 +49,8 @@ namespace VendorPortal.API.Controllers
                 Email = vendorDto.Email,
                 UserName = vendorDto.Email,
                 VendorCategoryId = vendorDto.VendorCategoryId,
-                DocumentsUploadList = new List<DocumentsUpload>()
+                DocumentsUploadList = new List<DocumentsUpload>(),
+                IsVerified = false,
             };
 
             var vendorResult = await userManager.CreateAsync(newVendor, "Pass@123");
@@ -108,6 +110,7 @@ namespace VendorPortal.API.Controllers
                     Address = vendorResult.Address,
                     Pincode = (int)vendorResult.Pincode,
                     City = vendorResult.City,
+                    IsVerified = vendorResult.IsVerified,
                     DocumentsUploadList = vendorResult.DocumentsUploadList.Select(qi => new DocumentsUploadResponseDto
                     {
                         Id = qi.Id,
@@ -168,8 +171,9 @@ namespace VendorPortal.API.Controllers
                         PhoneNumber = singleVendor.PhoneNumber,
                         State = singleVendor.State,
                         Address = singleVendor.Address,
-                        Pincode = (int)singleVendor.Pincode,
                         City = singleVendor.City,
+                        Pincode = (int)singleVendor.Pincode,
+                        IsVerified = singleVendor.IsVerified,
                         DocumentsUploadList = singleVendor.DocumentsUploadList.Select(qi => new DocumentsUploadResponseDto
                         {
                             Id = qi.Id,
@@ -228,9 +232,9 @@ namespace VendorPortal.API.Controllers
                     PhoneNumber = vendorResult.PhoneNumber,
                     State = vendorResult.State,
                     Address = vendorResult.Address,
-                    Pincode = (int)vendorResult.Pincode,
                     City = vendorResult.City,
-                    VendorCategory = vendorResult.VendorCategory,
+                    Pincode = (int)vendorResult.Pincode,
+                    IsVerified = vendorResult.IsVerified,
                     DocumentsUploadList = vendorResult.DocumentsUploadList.Select(qi => new DocumentsUploadResponseDto
                     {
                         Id = qi.Id,
@@ -239,7 +243,8 @@ namespace VendorPortal.API.Controllers
                         DocumentPath = qi.DocumentPath,
                         IsVerified = qi.IsVerified,
                         Comment = qi.Comment,
-                    }).ToList()
+                    }).ToList(),
+                    VendorCategory = vendorResult.VendorCategory,
                 };
 
                 return Ok(vendor);
@@ -253,17 +258,15 @@ namespace VendorPortal.API.Controllers
         [Route("Doc")]
         public async Task<IActionResult> UpdateDoc([FromForm] VendorDocUpdateDto vendorDocUpdateDto)
         {
-            var vendorResult = await userManager.FindByIdAsync(vendorDocUpdateDto.VendorId);
+            var documentResult = await dbContext.DocumentsUploads.Include(x => x.Document).FirstOrDefaultAsync(x => x.Id == vendorDocUpdateDto.Id);
 
-            if (vendorResult != null)
+            if (documentResult != null)
             {
-                var documentResult = await dbContext.DocumentsUploads.Include(x => x.Document).FirstOrDefaultAsync(x => x.DocumentId == vendorDocUpdateDto.DocumentId && x.VendorId == vendorDocUpdateDto.VendorId);
-
                 ValidateFileUpload(vendorDocUpdateDto.Document);
 
                 if (ModelState.IsValid)
                 {
-                    string docPath = await Upload(vendorDocUpdateDto.Document, vendorDocUpdateDto.VendorId);
+                    string docPath = await Upload(vendorDocUpdateDto.Document, documentResult.VendorId);
 
                     documentResult.DocumentPath = docPath;
                     documentResult.Comment = "Uploaded";
@@ -286,16 +289,19 @@ namespace VendorPortal.API.Controllers
         [Route("DocVerify")]
         public async Task<IActionResult> DocVerify([FromBody] VendorDocVerifyDto vendorDocVerifyDto)
         {
-            var vendorResult = await userManager.FindByIdAsync(vendorDocVerifyDto.VendorId);
+            var documentResult = await dbContext.DocumentsUploads.Include(x => x.Document).FirstOrDefaultAsync(x => x.Id == vendorDocVerifyDto.Id);
 
-            if (vendorResult != null)
+            if (documentResult != null)
             {
-                var documentResult = await dbContext.DocumentsUploads.Include(x => x.Document).FirstOrDefaultAsync(x => x.DocumentId == vendorDocVerifyDto.DocumentId && x.VendorId == vendorDocVerifyDto.VendorId);
-
+                if (!vendorDocVerifyDto.DocumentVerified)
+                {
+                    bool del = await Delete(documentResult.DocumentPath);
+                    if (del) { documentResult.DocumentPath = null; }
+                }
                 documentResult.IsVerified = vendorDocVerifyDto.DocumentVerified;
                 documentResult.Comment = vendorDocVerifyDto.Comment;
 
-                var allDocs = await dbContext.DocumentsUploads.Where(x => x.VendorId == vendorDocVerifyDto.VendorId).ToListAsync();
+                var allDocs = await dbContext.DocumentsUploads.Where(x => x.VendorId == documentResult.VendorId).ToListAsync();
 
                 if (allDocs != null)
                 {
@@ -308,7 +314,7 @@ namespace VendorPortal.API.Controllers
                         }
                     }
 
-                    var vendor = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == vendorDocVerifyDto.VendorId);
+                    var vendor = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == documentResult.VendorId);
                     vendor.IsVerified = isVerify;
                     await dbContext.SaveChangesAsync();
                 }
@@ -328,13 +334,28 @@ namespace VendorPortal.API.Controllers
             {
                 Directory.CreateDirectory(folder);
             }
-            var localFilePath = Path.Combine(folder, document.FileName);
+
+            string uniqueName = Guid.NewGuid().ToString();
+            string fileExt = Path.GetExtension(document.FileName);
+            var localFilePath = Path.Combine(folder, $"{uniqueName}{fileExt}");
 
             using var stream = new FileStream(localFilePath, FileMode.Create);
             await document.CopyToAsync(stream);
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/VendorDocuments/{id}/{document.FileName}";
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/VendorDocuments/{id}/{uniqueName}{fileExt}";
             var FilePath = urlFilePath;
             return FilePath;
+        }
+
+        private async Task<bool> Delete(string filePath)
+        {
+            if (filePath != null)
+            {
+                string[] files = filePath.Split("/");
+                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "VendorDocuments", files[files.Length - 2], files[files.Length - 1]);
+                System.IO.File.Delete(ExitingFile);
+                return true;
+            }
+            return false;
         }
 
         private void ValidateFileUpload(IFormFile document)

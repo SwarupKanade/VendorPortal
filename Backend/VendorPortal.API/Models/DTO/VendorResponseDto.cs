@@ -14,6 +14,7 @@ namespace VendorPortal.API.Models.DTO
         public string City { get; set; }
         public string Address { get; set; }
         public int Pincode { get; set; }
+        public bool IsVerified { get; set; }
 
         public ICollection<DocumentsUploadResponseDto>? DocumentsUploadList { get; set; }
 

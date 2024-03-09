@@ -25,16 +25,7 @@ namespace VendorPortal.API.Controllers
         [Route("Add")]
         public async Task<IActionResult> Add([FromBody] VendorCategoryDto vendorCategoryDto)
         {
-
-            var vendorCategory = new VendorCategory
-            {
-                Name = vendorCategoryDto.Name,
-                Description = vendorCategoryDto.Description,
-                DocumentList = new List<VendorCategoryDocument>()
-            };
-
-            await dbContext.VendorCategories.AddAsync(vendorCategory);
-            await dbContext.SaveChangesAsync();
+            List<VendorCategoryDocument> vendorCategoryDocument = new List<VendorCategoryDocument>();
 
             foreach (var docId in vendorCategoryDto.DocumentList)
             {
@@ -42,7 +33,7 @@ namespace VendorPortal.API.Controllers
 
                 if (doc != null)
                 {
-                    vendorCategory.DocumentList.Add(new VendorCategoryDocument { Document = doc });
+                    vendorCategoryDocument.Add(new VendorCategoryDocument { Document = doc });
                 }
                 else
                 {
@@ -50,6 +41,14 @@ namespace VendorPortal.API.Controllers
                 }
             }
 
+            var vendorCategory = new VendorCategory
+            {
+                Name = vendorCategoryDto.Name,
+                Description = vendorCategoryDto.Description,
+                DocumentList = vendorCategoryDocument
+            };
+
+            await dbContext.VendorCategories.AddAsync(vendorCategory);
             await dbContext.SaveChangesAsync();
 
             return Ok(vendorCategory);

@@ -177,11 +177,14 @@ namespace VendorPortal.API.Controllers
             {
                 Directory.CreateDirectory(folder);
             }
-            var localFilePath = Path.Combine(folder, document.FileName);
+
+            string uniqueName = Guid.NewGuid().ToString();
+            string fileExt = Path.GetExtension(document.FileName);
+            var localFilePath = Path.Combine(folder, $"{uniqueName}{fileExt}");
 
             using var stream = new FileStream(localFilePath, FileMode.Create);
             await document.CopyToAsync(stream);
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/ProductImages/{document.FileName}";
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/ProductImages/{uniqueName}{fileExt}";
             var FilePath = urlFilePath;
             return FilePath;
         }

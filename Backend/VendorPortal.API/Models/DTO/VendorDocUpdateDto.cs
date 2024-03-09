@@ -2,9 +2,8 @@
 {
     public class VendorDocUpdateDto
     {
+        public Guid Id { get; set; }
         public IFormFile Document { get; set; }
 
-        public string VendorId { get; set; }
-        public Guid DocumentId { get; set; }
     }
 }

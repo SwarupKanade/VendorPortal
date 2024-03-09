@@ -118,13 +118,15 @@ namespace VendorPortal.API.Controllers
             {
                 Directory.CreateDirectory(folder);
             }
-            var localFilePath = Path.Combine(folder, document.FileName);
 
-            // Upload Image to Local Path
+            string uniqueName = Guid.NewGuid().ToString();
+            string fileExt = Path.GetExtension(document.FileName);
+            var localFilePath = Path.Combine(folder, $"{uniqueName}{fileExt}");
+
             using var stream = new FileStream(localFilePath, FileMode.Create);
             await document.CopyToAsync(stream);
 
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/RFPDocuments/{document.FileName}";
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/RFPDocuments/{uniqueName}{fileExt}";
 
             var FilePath = urlFilePath;
 

@@ -35,6 +35,7 @@ namespace VendorPortal.API.Controllers
                 PhoneNumber = projectHeadDto.PhoneNumber,
                 Email = projectHeadDto.Email,
                 UserName = projectHeadDto.UserName,
+                IsVerified = true,
             };
 
             var projectHeadResult = await userManager.CreateAsync(newProjectHead, "Pass@123");
