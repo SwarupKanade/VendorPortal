@@ -21,6 +21,9 @@ namespace VendorPortal.API.Data
         public DbSet<DocumentsUpload> DocumentsUploads { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<Event> Events { get; set; }
+        public DbSet<News> Newss { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
