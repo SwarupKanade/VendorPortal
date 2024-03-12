@@ -79,30 +79,34 @@ namespace VendorPortal.API.Controllers
 
             if (eventResult != null)
             {
-                ValidateFileUpload(eventDto.Image);
+                eventResult.Title = eventDto.Title;
+                eventResult.EventDateTime = eventDto.EventDateTime;
+                eventResult.Content = eventDto.Content;
+                eventResult.IsActive = eventDto.IsActive;
+                eventResult.LastModified = DateTime.Now;
 
-                if (ModelState.IsValid)
+                if (eventDto.Image != null)
                 {
-                    bool del = await Delete(eventResult.ImagePath);
-                    if (del)
+                    ValidateFileUpload(eventDto.Image);
+
+                    if (ModelState.IsValid)
                     {
-
-                        string imgPath = await Upload(eventDto.Image);
-                        eventResult.ImagePath = imgPath;
+                        bool del = await Delete(eventResult.ImagePath);
+                        if (del)
+                        {
+                            string imgPath = await Upload(eventDto.Image);
+                            eventResult.ImagePath = imgPath;
+                        }
                     }
-                    eventResult.Title = eventDto.Title;
-                    eventResult.EventDateTime = eventDto.EventDateTime;
-                    eventResult.Content = eventDto.Content;
-                    eventResult.IsActive = eventDto.IsActive;
-                    eventResult.LastModified = DateTime.Now;
-                    await dbContext.SaveChangesAsync();
-                    return Ok(eventResult);
+                    else
+                    {
+                        return BadRequest(ModelState);
+                    }
 
                 }
-                else
-                {
-                    return BadRequest(ModelState);
-                }
+                await dbContext.SaveChangesAsync();
+                return Ok(eventResult);
+
             }
             return BadRequest("Something went wrong");
         }

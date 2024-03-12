@@ -78,28 +78,33 @@ namespace VendorPortal.API.Controllers
 
             if (newsResult != null)
             {
-                ValidateFileUpload(newsDto.Image);
+                newsResult.Title = newsDto.Title;
+                newsResult.Content = newsDto.Content;
+                newsResult.IsActive = newsDto.IsActive;
+                newsResult.LastModified = DateTime.Now;
 
-                if (ModelState.IsValid)
+                if (newsDto.Image != null)
                 {
-                    bool del = await Delete(newsResult.ImagePath);
-                    if (del)
+                    ValidateFileUpload(newsDto.Image);
+
+                    if (ModelState.IsValid)
                     {
-                        string imgPath = await Upload(newsDto.Image);
-                        newsResult.ImagePath = imgPath;
+                        bool del = await Delete(newsResult.ImagePath);
+                        if (del)
+                        {
+                            string imgPath = await Upload(newsDto.Image);
+                            newsResult.ImagePath = imgPath;
+                        }
                     }
-                    newsResult.Title = newsDto.Title;
-                    newsResult.Content = newsDto.Content;
-                    newsResult.IsActive = newsDto.IsActive;
-                    newsResult.LastModified = DateTime.Now;
-                    await dbContext.SaveChangesAsync();
-                    return Ok(newsResult);
+                    else
+                    {
+                        return BadRequest(ModelState);
+                    }
 
                 }
-                else
-                {
-                    return BadRequest(ModelState);
-                }
+                await dbContext.SaveChangesAsync();
+                return Ok(newsResult);
+
             }
             return BadRequest("Something went wrong");
         }
