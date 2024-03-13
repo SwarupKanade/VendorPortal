@@ -8,13 +8,13 @@ namespace VendorPortal.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NewsController : ControllerBase
+    public class PolicyDocumentController : ControllerBase
     {
         private readonly VendorPortalDbContext dbContext;
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public NewsController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
+        public PolicyDocumentController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
             IHttpContextAccessor httpContextAccessor)
         {
             this.dbContext = dbContext;
@@ -25,28 +25,27 @@ namespace VendorPortal.API.Controllers
         [HttpPost]
         [Route("Add")]
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Add([FromForm] NewsDto newsDto)
+        public async Task<IActionResult> Add([FromForm] PolicyDocumentDto policyDocumentDto)
         {
 
-            ValidateFileUpload(newsDto.Image);
+            ValidateFileUpload(policyDocumentDto.Document);
 
             if (ModelState.IsValid)
             {
-                string imgPath = await Upload(newsDto.Image);
+                string docPath = await Upload(policyDocumentDto.Document);
 
-                var news = new News
+                var policyDocument = new PolicyDocument
                 {
-                    Title = newsDto.Title,
-                    ImagePath = imgPath,
-                    Content = newsDto.Content,
-                    IsActive = newsDto.IsActive,
+                    DocumentPath = docPath,
+                    Name = policyDocumentDto.Name,
+                    IsActive = policyDocumentDto.IsActive,
                     CreatedOn = DateTime.Now,
                     LastModifiedOn = DateTime.Now,
                 };
 
-                await dbContext.Newss.AddAsync(news);
+                await dbContext.PolicyDocuments.AddAsync(policyDocument);
                 await dbContext.SaveChangesAsync();
-                return Ok(news);
+                return Ok(policyDocument);
             }
             else
             {
@@ -59,11 +58,11 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var newsResult = await dbContext.Newss.ToListAsync();
+            var policyDocumentResult = await dbContext.PolicyDocuments.ToListAsync();
 
-            if (newsResult != null)
+            if (policyDocumentResult != null)
             {
-                return Ok(newsResult);
+                return Ok(policyDocumentResult);
             }
 
             return BadRequest("Something went wrong");
@@ -74,11 +73,11 @@ namespace VendorPortal.API.Controllers
         [Route("AllActive")]
         public async Task<IActionResult> GetActive()
         {
-            var newsResult = await dbContext.Newss.Where(x => x.IsActive).ToListAsync();
+            var policyDocumentResult = await dbContext.PolicyDocuments.Where(x => x.IsActive).ToListAsync();
 
-            if (newsResult != null)
+            if (policyDocumentResult != null)
             {
-                return Ok(newsResult);
+                return Ok(policyDocumentResult);
             }
 
             return BadRequest("Something went wrong");
@@ -87,28 +86,27 @@ namespace VendorPortal.API.Controllers
 
         [HttpPut]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] NewsUpdateDto newsUpdateDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] PolicyDocumentUpdateDto policyDocumentUpdateDto)
         {
-            var newsResult = await dbContext.Newss.FirstOrDefaultAsync(x => x.Id == id);
+            var policyDocumentResult = await dbContext.PolicyDocuments.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (newsResult != null)
+            if (policyDocumentResult != null)
             {
-                newsResult.Title = newsUpdateDto.Title;
-                newsResult.Content = newsUpdateDto.Content;
-                newsResult.IsActive = newsUpdateDto.IsActive;
-                newsResult.LastModifiedOn = DateTime.Now;
+                policyDocumentResult.Name = policyDocumentUpdateDto.Name;
+                policyDocumentResult.IsActive = policyDocumentUpdateDto.IsActive;
+                policyDocumentResult.LastModifiedOn = DateTime.Now;
 
-                if (newsUpdateDto.Image != null)
+                if (policyDocumentUpdateDto.Document != null)
                 {
-                    ValidateFileUpload(newsUpdateDto.Image);
+                    ValidateFileUpload(policyDocumentUpdateDto.Document);
 
                     if (ModelState.IsValid)
                     {
-                        bool del = Delete(newsResult.ImagePath);
+                        bool del = Delete(policyDocumentResult.DocumentPath);
                         if (del)
                         {
-                            string imgPath = await Upload(newsUpdateDto.Image);
-                            newsResult.ImagePath = imgPath;
+                            string docPath = await Upload(policyDocumentUpdateDto.Document);
+                            policyDocumentResult.DocumentPath = docPath;
                         }
                     }
                     else
@@ -118,7 +116,7 @@ namespace VendorPortal.API.Controllers
 
                 }
                 await dbContext.SaveChangesAsync();
-                return Ok(newsResult);
+                return Ok(policyDocumentResult);
 
             }
             return BadRequest("Something went wrong");
@@ -128,14 +126,14 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var newsResult = await dbContext.Newss.FirstOrDefaultAsync(x => x.Id == id);
+            var policyDocumentResult = await dbContext.PolicyDocuments.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (newsResult == null)
+            if (policyDocumentResult == null)
             {
                 return NotFound();
             }
 
-            dbContext.Newss.Remove(newsResult);
+            dbContext.PolicyDocuments.Remove(policyDocumentResult);
             await dbContext.SaveChangesAsync();
             return NoContent();
         }
@@ -143,7 +141,7 @@ namespace VendorPortal.API.Controllers
 
         private async Task<string> Upload(IFormFile image)
         {
-            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "News");
+            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "PolicyDocuments");
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -155,13 +153,13 @@ namespace VendorPortal.API.Controllers
 
             using var stream = new FileStream(localFilePath, FileMode.Create);
             await image.CopyToAsync(stream);
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/News/{uniqueName}{fileExt}";
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/PolicyDocuments/{uniqueName}{fileExt}";
             var FilePath = urlFilePath;
             return FilePath;
         }
         private void ValidateFileUpload(IFormFile image)
         {
-            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };
+            var allowedExtensions = new string[] { ".pdf" };
 
             if (!allowedExtensions.Contains(Path.GetExtension(image.FileName).ToLower()))
             {
@@ -179,7 +177,7 @@ namespace VendorPortal.API.Controllers
             if (filePath != null)
             {
                 string[] files = filePath.Split("/");
-                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "News", files[files.Length - 1]);
+                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "PolicyDocuments", files[files.Length - 1]);
                 System.IO.File.Delete(ExitingFile);
                 return true;
             }

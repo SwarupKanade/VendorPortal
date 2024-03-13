@@ -41,8 +41,8 @@ namespace VendorPortal.API.Controllers
                     EventDateTime = eventDto.EventDateTime,
                     Content = eventDto.Content,
                     IsActive = eventDto.IsActive,
-                    Created = DateTime.Now,
-                    LastModified = DateTime.Now,
+                    CreatedOn = DateTime.Now,
+                    LastModifiedOn = DateTime.Now,
                 };
 
                 await dbContext.Events.AddAsync(newEvent);
@@ -71,30 +71,45 @@ namespace VendorPortal.API.Controllers
 
         }
 
+        [HttpGet]
+        [Route("AllActive")]
+        public async Task<IActionResult> GetActive()
+        {
+            var eventResult = await dbContext.Events.Where(x => x.IsActive).ToListAsync();
+
+            if (eventResult != null)
+            {
+                return Ok(eventResult);
+            }
+
+            return BadRequest("Something went wrong");
+
+        }
+
         [HttpPut]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] EventDto eventDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] EventUpdateDto eventUpdateDto)
         {
             var eventResult = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == id);
 
             if (eventResult != null)
             {
-                eventResult.Title = eventDto.Title;
-                eventResult.EventDateTime = eventDto.EventDateTime;
-                eventResult.Content = eventDto.Content;
-                eventResult.IsActive = eventDto.IsActive;
-                eventResult.LastModified = DateTime.Now;
+                eventResult.Title = eventUpdateDto.Title;
+                eventResult.EventDateTime = eventUpdateDto.EventDateTime;
+                eventResult.Content = eventUpdateDto.Content;
+                eventResult.IsActive = eventUpdateDto.IsActive;
+                eventResult.LastModifiedOn = DateTime.Now;
 
-                if (eventDto.Image != null)
+                if (eventUpdateDto.Image != null)
                 {
-                    ValidateFileUpload(eventDto.Image);
+                    ValidateFileUpload(eventUpdateDto.Image);
 
                     if (ModelState.IsValid)
                     {
-                        bool del = await Delete(eventResult.ImagePath);
+                        bool del = Delete(eventResult.ImagePath);
                         if (del)
                         {
-                            string imgPath = await Upload(eventDto.Image);
+                            string imgPath = await Upload(eventUpdateDto.Image);
                             eventResult.ImagePath = imgPath;
                         }
                     }
@@ -109,6 +124,22 @@ namespace VendorPortal.API.Controllers
 
             }
             return BadRequest("Something went wrong");
+        }
+
+        [HttpDelete]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
+        {
+            var eventResult = await dbContext.Events.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (eventResult == null)
+            {
+                return NotFound();
+            }
+
+            dbContext.Events.Remove(eventResult);
+            await dbContext.SaveChangesAsync();
+            return NoContent();
         }
 
 
@@ -145,7 +176,7 @@ namespace VendorPortal.API.Controllers
             }
         }
 
-        private async Task<bool> Delete(string filePath)
+        private bool Delete(string filePath)
         {
             if (filePath != null)
             {

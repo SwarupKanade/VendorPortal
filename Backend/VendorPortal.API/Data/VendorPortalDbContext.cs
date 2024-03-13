@@ -23,6 +23,9 @@ namespace VendorPortal.API.Data
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<News> Newss { get; set; }
+        public DbSet<Banner> Banners { get; set; }
+        public DbSet<PolicyDocument> PolicyDocuments { get; set; }
+        public DbSet<ProfileCard> ProfileCards { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -72,6 +75,9 @@ namespace VendorPortal.API.Data
             builder.Entity<UserProfile>().HasMany(d => d.DocumentsUploadList).WithOne(du => du.UserProfile).HasForeignKey(du => du.VendorId);
             
             builder.Entity<VendorCategoryDocument>().HasKey(vcd => new { vcd.DocumentId, vcd.VendorCategoryId });
+
+            builder.Entity<ProfileCard>().HasOne(u => u.UserProfile).WithMany().HasForeignKey(u => u.UserId).OnDelete(DeleteBehavior.Restrict);
+
 
             builder.Entity<VendorCategoryDocument>()
                 .HasOne(vcd => vcd.Document)

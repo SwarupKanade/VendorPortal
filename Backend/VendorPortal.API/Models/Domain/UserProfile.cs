@@ -16,7 +16,7 @@ namespace VendorPortal.API.Models.Domain
         public ICollection<DocumentsUpload>? DocumentsUploadList { get; set; }
 
         // Navigation properties
-        public VendorCategory VendorCategory { get; set; }
+        public VendorCategory? VendorCategory { get; set; }
 
     }
 }

@@ -7,7 +7,7 @@
         public string ImagePath { get; set; }
         public string Content { get; set; }
         public bool IsActive { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime LastModified { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime LastModifiedOn { get; set; }
     }
 }

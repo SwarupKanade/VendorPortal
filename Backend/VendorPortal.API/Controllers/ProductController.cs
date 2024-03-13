@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
@@ -141,36 +139,61 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] ProductUpdateDto productUpdateDto)
         {
+            var productResult = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
 
-            ValidateFileUpload(productUpdateDto.ImageFile);
-            if (ModelState.IsValid)
+            if (productResult != null)
             {
-                string imagePath = await Upload(productUpdateDto.ImageFile);
-                var productResult = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+                productResult.Name = productUpdateDto.Name;
+                productResult.ShortDescription = productUpdateDto.ShortDescription;
+                productResult.LongDescription = productUpdateDto.LongDescription;
+                productResult.UnitType = productUpdateDto.UnitType;
+                productResult.Size = productUpdateDto.Size;
+                productResult.Specification = productUpdateDto.Specification;
+                productResult.CategoryId = productUpdateDto.ProductCategoryId;
+                productResult.SubCategoryId = productUpdateDto.SubCategoryId;
 
-                if (productResult != null)
+                if (productUpdateDto.ImageFile != null)
                 {
-                    productResult.Name = productUpdateDto.Name;
-                    productResult.ImagePath = imagePath;
-                    productResult.ShortDescription = productUpdateDto.ShortDescription;
-                    productResult.LongDescription = productUpdateDto.LongDescription;
-                    productResult.Size = productUpdateDto.Size;
-                    productResult.UnitType = productResult.UnitType;
-                    productResult.Specification = productUpdateDto.Specification;
+                    ValidateFileUpload(productUpdateDto.ImageFile);
 
-                    return Ok(productResult);
+                    if (ModelState.IsValid)
+                    {
+                        bool del = Delete(productResult.ImagePath);
+                        if (del)
+                        {
+                            string imgPath = await Upload(productUpdateDto.ImageFile);
+                            productResult.ImagePath = imgPath;
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(ModelState);
+                    }
+
                 }
-                return BadRequest("Something went wrong");
+                await dbContext.SaveChangesAsync();
+                return Ok(productResult);
             }
-            else
-            {
-                return BadRequest(ModelState);
-            }
-
-
+            return BadRequest("Something went wrong");
         }
 
-            private async Task<string> Upload(IFormFile document)
+        [HttpDelete]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
+        {
+            var productResult = await dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (productResult == null)
+            {
+                return NotFound();
+            }
+
+            dbContext.Products.Remove(productResult);
+            await dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+
+        private async Task<string> Upload(IFormFile document)
         {
             var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "ProductImages");
             if (!Directory.Exists(folder))
@@ -191,7 +214,7 @@ namespace VendorPortal.API.Controllers
 
         private void ValidateFileUpload(IFormFile document)
         {
-            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".pdf" };
+            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png" };
 
             if (!allowedExtensions.Contains(Path.GetExtension(document.FileName).ToLower()))
             {
@@ -202,6 +225,18 @@ namespace VendorPortal.API.Controllers
             {
                 ModelState.AddModelError("file", "File size more than 10MB, please upload a smaller size file.");
             }
+        }
+
+        private bool Delete(string filePath)
+        {
+            if (filePath != null)
+            {
+                string[] files = filePath.Split("/");
+                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "ProductImages", files[files.Length - 1]);
+                System.IO.File.Delete(ExitingFile);
+                return true;
+            }
+            return false;
         }
 
     }

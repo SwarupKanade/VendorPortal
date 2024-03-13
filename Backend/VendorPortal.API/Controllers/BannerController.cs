@@ -8,13 +8,13 @@ namespace VendorPortal.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NewsController : ControllerBase
+    public class BannerController : ControllerBase
     {
         private readonly VendorPortalDbContext dbContext;
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public NewsController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
+        public BannerController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
             IHttpContextAccessor httpContextAccessor)
         {
             this.dbContext = dbContext;
@@ -25,28 +25,27 @@ namespace VendorPortal.API.Controllers
         [HttpPost]
         [Route("Add")]
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Add([FromForm] NewsDto newsDto)
+        public async Task<IActionResult> Add([FromForm] BannerDto bannerDto)
         {
 
-            ValidateFileUpload(newsDto.Image);
+            ValidateFileUpload(bannerDto.Image);
 
             if (ModelState.IsValid)
             {
-                string imgPath = await Upload(newsDto.Image);
+                string imgPath = await Upload(bannerDto.Image);
 
-                var news = new News
+                var banner = new Banner
                 {
-                    Title = newsDto.Title,
                     ImagePath = imgPath,
-                    Content = newsDto.Content,
-                    IsActive = newsDto.IsActive,
+                    Title = bannerDto.Title,
+                    IsActive = bannerDto.IsActive,
                     CreatedOn = DateTime.Now,
                     LastModifiedOn = DateTime.Now,
                 };
 
-                await dbContext.Newss.AddAsync(news);
+                await dbContext.Banners.AddAsync(banner);
                 await dbContext.SaveChangesAsync();
-                return Ok(news);
+                return Ok(banner);
             }
             else
             {
@@ -59,11 +58,11 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var newsResult = await dbContext.Newss.ToListAsync();
+            var bannerResult = await dbContext.Banners.ToListAsync();
 
-            if (newsResult != null)
+            if (bannerResult != null)
             {
-                return Ok(newsResult);
+                return Ok(bannerResult);
             }
 
             return BadRequest("Something went wrong");
@@ -74,11 +73,11 @@ namespace VendorPortal.API.Controllers
         [Route("AllActive")]
         public async Task<IActionResult> GetActive()
         {
-            var newsResult = await dbContext.Newss.Where(x => x.IsActive).ToListAsync();
+            var bannerResult = await dbContext.Banners.Where(x => x.IsActive).ToListAsync();
 
-            if (newsResult != null)
+            if (bannerResult != null)
             {
-                return Ok(newsResult);
+                return Ok(bannerResult);
             }
 
             return BadRequest("Something went wrong");
@@ -87,28 +86,27 @@ namespace VendorPortal.API.Controllers
 
         [HttpPut]
         [Route("{id:Guid}")]
-        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] NewsUpdateDto newsUpdateDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] BannerUpdateDto bannerUpdateDto)
         {
-            var newsResult = await dbContext.Newss.FirstOrDefaultAsync(x => x.Id == id);
+            var bannerResult = await dbContext.Banners.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (newsResult != null)
+            if (bannerResult != null)
             {
-                newsResult.Title = newsUpdateDto.Title;
-                newsResult.Content = newsUpdateDto.Content;
-                newsResult.IsActive = newsUpdateDto.IsActive;
-                newsResult.LastModifiedOn = DateTime.Now;
+                bannerResult.Title = bannerUpdateDto.Title;
+                bannerResult.IsActive = bannerUpdateDto.IsActive;
+                bannerResult.LastModifiedOn = DateTime.Now;
 
-                if (newsUpdateDto.Image != null)
+                if (bannerUpdateDto.Image != null)
                 {
-                    ValidateFileUpload(newsUpdateDto.Image);
+                    ValidateFileUpload(bannerUpdateDto.Image);
 
                     if (ModelState.IsValid)
                     {
-                        bool del = Delete(newsResult.ImagePath);
+                        bool del = Delete(bannerResult.ImagePath);
                         if (del)
                         {
-                            string imgPath = await Upload(newsUpdateDto.Image);
-                            newsResult.ImagePath = imgPath;
+                            string imgPath = await Upload(bannerUpdateDto.Image);
+                            bannerResult.ImagePath = imgPath;
                         }
                     }
                     else
@@ -118,7 +116,7 @@ namespace VendorPortal.API.Controllers
 
                 }
                 await dbContext.SaveChangesAsync();
-                return Ok(newsResult);
+                return Ok(bannerResult);
 
             }
             return BadRequest("Something went wrong");
@@ -128,14 +126,14 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var newsResult = await dbContext.Newss.FirstOrDefaultAsync(x => x.Id == id);
+            var bannerResult = await dbContext.Banners.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (newsResult == null)
+            if (bannerResult == null)
             {
                 return NotFound();
             }
 
-            dbContext.Newss.Remove(newsResult);
+            dbContext.Banners.Remove(bannerResult);
             await dbContext.SaveChangesAsync();
             return NoContent();
         }
@@ -143,7 +141,7 @@ namespace VendorPortal.API.Controllers
 
         private async Task<string> Upload(IFormFile image)
         {
-            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "News");
+            var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "Banners");
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -155,7 +153,7 @@ namespace VendorPortal.API.Controllers
 
             using var stream = new FileStream(localFilePath, FileMode.Create);
             await image.CopyToAsync(stream);
-            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/News/{uniqueName}{fileExt}";
+            var urlFilePath = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host}{httpContextAccessor.HttpContext.Request.PathBase}/Files/Banners/{uniqueName}{fileExt}";
             var FilePath = urlFilePath;
             return FilePath;
         }
@@ -179,7 +177,7 @@ namespace VendorPortal.API.Controllers
             if (filePath != null)
             {
                 string[] files = filePath.Split("/");
-                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "News", files[files.Length - 1]);
+                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "Banners", files[files.Length - 1]);
                 System.IO.File.Delete(ExitingFile);
                 return true;
             }

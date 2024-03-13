@@ -110,12 +110,10 @@ namespace VendorPortal.API.Controllers
                     Name = projectHeadResult.Name,
                     Email = projectHeadResult.Email,
                     PhoneNumber = projectHeadResult.PhoneNumber,
-
                 };
 
                 return Ok(projectHead);
             }
-
 
             return BadRequest("Something went wrong");
         }

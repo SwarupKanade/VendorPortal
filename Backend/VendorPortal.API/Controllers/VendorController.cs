@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Crypto;
-using System.Numerics;
 using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
@@ -295,7 +293,7 @@ namespace VendorPortal.API.Controllers
             {
                 if (!vendorDocVerifyDto.DocumentVerified)
                 {
-                    bool del = await Delete(documentResult.DocumentPath);
+                    bool del = Delete(documentResult.DocumentPath);
                     if (del) { documentResult.DocumentPath = null; }
                 }
                 documentResult.IsVerified = vendorDocVerifyDto.DocumentVerified;
@@ -346,7 +344,7 @@ namespace VendorPortal.API.Controllers
             return FilePath;
         }
 
-        private async Task<bool> Delete(string filePath)
+        private bool Delete(string filePath)
         {
             if (filePath != null)
             {
