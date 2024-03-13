@@ -98,6 +98,33 @@ namespace VendorPortal.API.Controllers
         }
 
         [HttpGet]
+        [Route("AllActive")]
+        public async Task<IActionResult> GetAllActive([FromQuery] string? filterOn, [FromQuery] string? filterVal)
+        {
+            var rfpsResult = dbContext.RFPs.Include("VendorCategory").Include("Project").AsEnumerable().Where(x => x.IsActive);
+
+            if (String.IsNullOrWhiteSpace(filterOn) == false && String.IsNullOrWhiteSpace(filterVal) == false)
+            {
+                if (filterOn.Equals("title", StringComparison.OrdinalIgnoreCase))
+                {
+                    rfpsResult = rfpsResult.Where(x => x.Title.ToLower().Contains(filterVal.ToLower()));
+                }
+
+                if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
+                {
+                    rfpsResult = rfpsResult.Where(x => x.VendorCategory.Name.ToLower().Contains(filterVal.ToLower()));
+                }
+            }
+
+            if (rfpsResult != null)
+            {
+                return Ok(rfpsResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
         [Route("VendorCategory/{id:Guid}")]
         public async Task<IActionResult> GetAllByVendorCategory([FromRoute] Guid id)
         {
