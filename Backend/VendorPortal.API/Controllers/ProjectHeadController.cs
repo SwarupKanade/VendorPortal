@@ -60,23 +60,23 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
+            var allProjectHeadResult = await userManager.GetUsersInRoleAsync("ProjectHead");
+            allProjectHeadResult = allProjectHeadResult.Where(x => x.Id == id).ToList();
 
-            var projectHeadResult = await userManager.FindByIdAsync(id);
+            if (allProjectHeadResult.Any())
+            { 
+                var projectHeadResult = await userManager.FindByIdAsync(id);
 
-            if (projectHeadResult != null)
-            {
                 var projectHead = new ProjectHeadResponseDto
                 {
                     Id = projectHeadResult.Id,
                     Name = projectHeadResult.Name,
                     Email = projectHeadResult.Email,
                     PhoneNumber = projectHeadResult.PhoneNumber,
-
                 };
 
                 return Ok(projectHead);
             }
-
 
             return BadRequest("Something went wrong");
         }
@@ -85,11 +85,13 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] ProjectHeadUpdateDto projectHeadUpdateDto)
         {
+            var allProjectHeadResult = await userManager.GetUsersInRoleAsync("ProjectHead");
+            allProjectHeadResult = allProjectHeadResult.Where(x => x.Id == id).ToList();
 
-            var projectHeadResult = await userManager.FindByIdAsync(id);
-
-            if (projectHeadResult != null)
+            if (allProjectHeadResult.Any())
             {
+                var projectHeadResult = await userManager.FindByIdAsync(id);
+
                 if (projectHeadUpdateDto.NewPassword != "")
                 {
                     var passResult = await userManager.ChangePasswordAsync(projectHeadResult, projectHeadUpdateDto.CurrentPassword, projectHeadUpdateDto.NewPassword);

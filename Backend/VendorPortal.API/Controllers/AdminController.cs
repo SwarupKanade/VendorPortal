@@ -53,9 +53,13 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
-            var adminResult = await userManager.FindByIdAsync(id);
-            if (adminResult != null)
+            var allAdminResult = await userManager.GetUsersInRoleAsync("Admin");
+            allAdminResult = allAdminResult.Where(x => x.Id == id).ToList();
+
+            if (allAdminResult.Any())
             {
+                var adminResult = await userManager.FindByIdAsync(id);
+            
                 var admin = new AdminResponseDto
                 {
                     Id = adminResult.Id,

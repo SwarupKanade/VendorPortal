@@ -92,11 +92,13 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
+            var allVendorResult = await userManager.GetUsersInRoleAsync("Vendor");
+            allVendorResult = allVendorResult.Where(x => x.Id == id).ToList();
 
-            var vendorResult = await dbContext.Users.Include(u => u.DocumentsUploadList).ThenInclude(du => du.Document).Include(u => u.VendorCategory).FirstOrDefaultAsync(x => x.Id == id);
-
-            if (vendorResult != null)
+            if (allVendorResult.Any())
             {
+                var vendorResult = await dbContext.Users.Include(u => u.DocumentsUploadList).ThenInclude(du => du.Document).Include(u => u.VendorCategory).FirstOrDefaultAsync(x => x.Id == id);
+
                 var vendor = new VendorResponseDto
                 {
                     Id = vendorResult.Id,
@@ -120,7 +122,6 @@ namespace VendorPortal.API.Controllers
                     }).ToList(),
                     VendorCategory = vendorResult.VendorCategory,
                 };
-
 
                 return Ok(vendor);
             }
@@ -189,7 +190,6 @@ namespace VendorPortal.API.Controllers
                 return Ok(allVendor);
             }
 
-
             return BadRequest("Something went wrong");
         }
 
@@ -198,10 +198,13 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] VendorUpdateDto vendorUpdateDto)
         {
-            var vendorResult = await userManager.FindByIdAsync(id);
+            var allVendorResult = await userManager.GetUsersInRoleAsync("Vendor");
+            allVendorResult = allVendorResult.Where(x => x.Id == id).ToList();
 
-            if (vendorResult != null)
+            if (allVendorResult.Any())
             {
+                var vendorResult = await userManager.FindByIdAsync(id);
+
                 if (vendorUpdateDto.NewPassword != "")
                 {
                     var passResult = await userManager.ChangePasswordAsync(vendorResult, vendorUpdateDto.CurrentPassword, vendorUpdateDto.NewPassword);
@@ -220,6 +223,8 @@ namespace VendorPortal.API.Controllers
                 vendorResult.Pincode = vendorUpdateDto.Pincode;
 
                 await userManager.UpdateAsync(vendorResult);
+
+                vendorResult = await dbContext.Users.Include(u => u.DocumentsUploadList).ThenInclude(du => du.Document).Include(u => u.VendorCategory).FirstOrDefaultAsync(x => x.Id == id);
 
                 var vendor = new VendorResponseDto
                 {
@@ -306,7 +311,7 @@ namespace VendorPortal.API.Controllers
                     bool isVerify = true;
                     foreach (var doc in allDocs)
                     {
-                        if(!doc.IsVerified)
+                        if (!doc.IsVerified)
                         {
                             isVerify = false;
                         }
