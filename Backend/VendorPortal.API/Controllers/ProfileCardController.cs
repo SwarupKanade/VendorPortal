@@ -67,6 +67,20 @@ namespace VendorPortal.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            var profileCardResult = await dbContext.ProfileCards.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (profileCardResult != null)
+            {
+                return Ok(profileCardResult);
+            }
+
+            return BadRequest("Something went wrong");
+
+        }
 
         [HttpGet]
         [Route("All")]

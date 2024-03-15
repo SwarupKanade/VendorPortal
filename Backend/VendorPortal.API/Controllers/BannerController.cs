@@ -53,6 +53,21 @@ namespace VendorPortal.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            var bannerResult = await dbContext.Banners.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (bannerResult != null)
+            {
+                return Ok(bannerResult);
+            }
+
+            return BadRequest("Something went wrong");
+
+        }
+
 
         [HttpGet]
         [Route("All")]

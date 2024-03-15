@@ -26,6 +26,8 @@ namespace VendorPortal.API.Data
         public DbSet<Banner> Banners { get; set; }
         public DbSet<PolicyDocument> PolicyDocuments { get; set; }
         public DbSet<ProfileCard> ProfileCards { get; set; }
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<PurchaseOrderHistory> PurchaseOrderHistories { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -88,6 +90,19 @@ namespace VendorPortal.API.Data
                 .HasOne(vcd => vcd.VendorCategory)
                 .WithMany(vc => vc.DocumentList)
                 .HasForeignKey(vcd => vcd.VendorCategoryId);
+
+            builder.Entity<PurchaseOrder>()
+                .HasMany(po => po.PurchaseOrderHistories)
+                .WithOne(poh => poh.PurchaseOrder)
+                .HasForeignKey(poh => poh.PurchaseOrderId);
+
+            builder.Entity<PurchaseOrderHistory>()
+                .HasOne(poh => poh.PurchaseOrder)
+                .WithMany(po => po.PurchaseOrderHistories)
+                .HasForeignKey(poh => poh.PurchaseOrderId);
+
+            builder.Entity<PurchaseOrder>().HasOne(u => u.Vendor).WithMany().HasForeignKey(u => u.VendorId).OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 
