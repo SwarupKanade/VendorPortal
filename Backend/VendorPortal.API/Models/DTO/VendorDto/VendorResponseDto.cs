@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using VendorPortal.API.Models.Domain;
 
-namespace VendorPortal.API.Models.DTO.Vendor
+namespace VendorPortal.API.Models.DTO.VendorDto
 {
     public class VendorResponseDto
     {

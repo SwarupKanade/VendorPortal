@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VendorPortal.API.Models.DTO.RFP
+namespace VendorPortal.API.Models.DTO.RFPDto
 {
     public class RFPDto
     {

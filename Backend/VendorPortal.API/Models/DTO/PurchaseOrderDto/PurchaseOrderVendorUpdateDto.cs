@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.PurchaseOrder
+﻿namespace VendorPortal.API.Models.DTO.PurchaseOrderDto
 {
     public class PurchaseOrderVendorUpdateDto
     {

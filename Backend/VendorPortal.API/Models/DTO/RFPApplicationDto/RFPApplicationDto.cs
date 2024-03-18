@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.RFPApplication
+﻿namespace VendorPortal.API.Models.DTO.RFPApplicationDto
 {
     public class RFPApplicationDto
     {

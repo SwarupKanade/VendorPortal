@@ -16,33 +16,10 @@
         public bool IsActive { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }
+        public string Comment { get; set; }
 
         // Navigation Property
         public UserProfile Vendor { get; set; }
-        public ICollection<PurchaseOrderHistory> PurchaseOrderHistories { get; set; }
-
-        public void Accept(string comment)
-        {
-            IsAccepted = true;
-            PurchaseOrderHistories.Add(new PurchaseOrderHistory
-            {
-                PurchaseOrderId = Id,
-                IsAccepted = true,
-                Comment = comment,
-                TimeStamp = DateTime.Now,
-            });
-        }
-
-        public void Reject(string comment)
-        {
-            IsAccepted = false;
-            PurchaseOrderHistories.Add(new PurchaseOrderHistory
-            {
-                PurchaseOrderId = Id,
-                IsAccepted = false,
-                Comment = comment,
-                TimeStamp = DateTime.Now,
-            });
-        }
+        
     }
 }

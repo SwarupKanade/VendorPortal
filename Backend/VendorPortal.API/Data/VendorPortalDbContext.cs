@@ -92,16 +92,6 @@ namespace VendorPortal.API.Data
                 .WithMany(vc => vc.DocumentList)
                 .HasForeignKey(vcd => vcd.VendorCategoryId);
 
-            builder.Entity<PurchaseOrder>()
-                .HasMany(po => po.PurchaseOrderHistories)
-                .WithOne(poh => poh.PurchaseOrder)
-                .HasForeignKey(poh => poh.PurchaseOrderId);
-
-            builder.Entity<PurchaseOrderHistory>()
-                .HasOne(poh => poh.PurchaseOrder)
-                .WithMany(po => po.PurchaseOrderHistories)
-                .HasForeignKey(poh => poh.PurchaseOrderId);
-
             builder.Entity<PurchaseOrder>().HasOne(u => u.Vendor).WithMany().HasForeignKey(u => u.VendorId).OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<RFPApplication>().HasOne(u => u.Vendor).WithMany().HasForeignKey(u => u.VendorId).OnDelete(DeleteBehavior.Restrict);
