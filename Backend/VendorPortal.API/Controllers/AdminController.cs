@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using VendorPortal.API.Models.DTO;
 using VendorPortal.API.Models.Domain;
 using Microsoft.EntityFrameworkCore;
+using VendorPortal.API.Models.DTO.Admin;
 
 namespace VendorPortal.API.Controllers
 {

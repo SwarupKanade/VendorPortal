@@ -5,6 +5,7 @@ using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
 using VendorPortal.API.Models.DTO;
+using VendorPortal.API.Models.DTO.Vendor;
 
 namespace VendorPortal.API.Controllers
 {

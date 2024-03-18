@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
-using VendorPortal.API.Models.DTO;
+using VendorPortal.API.Models.DTO.ProjectHead;
 
 namespace VendorPortal.API.Controllers
 {

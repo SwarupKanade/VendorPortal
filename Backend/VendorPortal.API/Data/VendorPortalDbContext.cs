@@ -27,6 +27,7 @@ namespace VendorPortal.API.Data
         public DbSet<PolicyDocument> PolicyDocuments { get; set; }
         public DbSet<ProfileCard> ProfileCards { get; set; }
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<RFPApplication> RFPApplications { get; set; }
         public DbSet<PurchaseOrderHistory> PurchaseOrderHistories { get; set; }
 
 
