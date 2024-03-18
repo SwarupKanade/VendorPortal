@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
+using VendorPortal.API.Models.DTO.RFPApplication;
 using VendorPortal.API.Models.DTO.RFPApplicationDto;
 
 namespace VendorPortal.API.Controllers
@@ -57,11 +58,24 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).FirstOrDefaultAsync(x => x.Id == id);
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).Include(x => x.Vendor).ThenInclude(x => x.VendorCategory).FirstOrDefaultAsync(x => x.Id == id);
 
             if (rfpAppResult != null)
             {
-                return Ok(rfpAppResult);
+                var rfpApp = new RFPApplicationResponseDto
+                {
+                    Id = rfpAppResult.Id,
+                    RFPId = rfpAppResult.RFPId,
+                    VendorId = rfpAppResult.VendorId,
+                    DocumentPath = rfpAppResult.DocumentPath,
+                    Comment = rfpAppResult.Comment,
+                    VendorName = rfpAppResult.Vendor.Name,
+                    VendorCategory = rfpAppResult.Vendor.VendorCategory,
+                    RFP = rfpAppResult.RFP,
+                    CreatedOn = rfpAppResult.CreatedOn,
+                    LastModifiedOn = rfpAppResult.LastModifiedOn,
+                };
+                return Ok(rfpApp);
             }
 
             return BadRequest("Something went wrong");
@@ -73,11 +87,29 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).ToListAsync();
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).Include(x => x.Vendor).ThenInclude(x => x.VendorCategory).ToListAsync();
 
             if (rfpAppResult != null)
             {
-                return Ok(rfpAppResult);
+                List<RFPApplicationResponseDto> rfpApplications = new List<RFPApplicationResponseDto>();
+                foreach (var rfpApp in rfpAppResult)
+                {
+                    var newRFPApp = new RFPApplicationResponseDto
+                    {
+                        Id = rfpApp.Id,
+                        RFPId = rfpApp.RFPId,
+                        VendorId = rfpApp.VendorId,
+                        DocumentPath = rfpApp.DocumentPath,
+                        Comment = rfpApp.Comment,
+                        VendorName = rfpApp.Vendor.Name,
+                        VendorCategory = rfpApp.Vendor.VendorCategory,
+                        RFP = rfpApp.RFP,
+                        CreatedOn = rfpApp.CreatedOn,
+                        LastModifiedOn = rfpApp.LastModifiedOn,
+                    };
+                    rfpApplications.Add(newRFPApp);
+                }
+                return Ok(rfpApplications);
             }
 
             return BadRequest("Something went wrong");
