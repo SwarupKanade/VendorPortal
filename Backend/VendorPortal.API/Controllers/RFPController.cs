@@ -46,6 +46,22 @@ namespace VendorPortal.API.Controllers
 
                 await dbContext.RFPs.AddAsync(rfp);
                 await dbContext.SaveChangesAsync();
+
+                // Notify users with the specified VendorCategoryId
+                var usersToNotify = await dbContext.Users.Where(u => u.VendorCategoryId == rfpDto.VendorCategoryId).ToListAsync();
+                foreach (var user in usersToNotify)
+                {
+                    await AddVendorNotification(user.Id, $"RFP '{rfpDto.Title}' is created.");
+                }
+
+                // Get the project associated with the project ID
+                var project = await dbContext.Projects.FirstOrDefaultAsync(p => p.Id == rfpDto.ProjectId);
+                if (project != null && project.ProjectHeadId != null)
+                {
+                    // Notify the project head
+                    await AddProjectHeadNotification(project.ProjectHeadId, $"RFP '{rfpDto.Title}' is created.");
+                }
+
                 return Ok(rfp);
             }
             else
@@ -53,6 +69,35 @@ namespace VendorPortal.API.Controllers
                 return BadRequest(ModelState);
             }
         }
+
+
+
+        private async Task AddVendorNotification(string userId, string content)
+        {
+            var vendorNotification = new NotificationVendor
+            {
+                UserId = userId,
+                Content = content,
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.VendorNotifications.AddAsync(vendorNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
+        private async Task AddProjectHeadNotification(string projectHeadId, string content)
+        {
+            var projectHeadNotification = new NotificationProjectHead
+            {
+                ProjectHeadId = projectHeadId,
+                Content = content,
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
 
 
         [HttpGet]

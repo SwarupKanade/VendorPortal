@@ -38,10 +38,37 @@ namespace VendorPortal.API.Controllers
 
             await dbContext.Projects.AddAsync(newProject);
 
+            // Add notification for the project head
+            await AddNotification(projectDto.ProjectHeadId, projectDto.Name);
+
+
             await dbContext.SaveChangesAsync();
             return Ok(newProject);
 
         }
+        
+
+        private async Task AddNotification(string projectHeadId, string projectName)
+        {
+            var projectHeadNotification = new NotificationProjectHead
+            {
+                ProjectHeadId = projectHeadId,
+                Content = $"You have been added to the new project: {projectName}",
+                CreatedAt = DateTime.Now
+            };
+
+            var adminNotification = new NotificationAdmin
+            {
+                Content = $"Project Head {projectHeadId} is added to {projectName}",
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+            await dbContext.AdminNotifications.AddAsync(adminNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
+
 
         [HttpGet]
         [Route("{id:Guid}")]
@@ -146,6 +173,8 @@ namespace VendorPortal.API.Controllers
 
             return BadRequest("Something went wrong");
         }
+
+
 
     }
 }
