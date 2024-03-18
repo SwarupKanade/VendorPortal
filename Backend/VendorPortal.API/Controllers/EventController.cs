@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
-using VendorPortal.API.Models.DTO.Event;
+using VendorPortal.API.Models.DTO.EventDto;
 
 namespace VendorPortal.API.Controllers
 {

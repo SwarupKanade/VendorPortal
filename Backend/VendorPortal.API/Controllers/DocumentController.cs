@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
-using VendorPortal.API.Models.DTO.Document;
+using VendorPortal.API.Models.DTO.DocumentDto;
 
 namespace VendorPortal.API.Controllers
 {

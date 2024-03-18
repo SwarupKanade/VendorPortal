@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
-using VendorPortal.API.Models.DTO.Product;
+using VendorPortal.API.Models.DTO.ProductDto;
 
 namespace VendorPortal.API.Controllers
 {

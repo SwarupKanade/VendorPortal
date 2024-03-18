@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VendorPortal.API.Models.Domain;
 using Microsoft.EntityFrameworkCore;
-using VendorPortal.API.Models.DTO.Admin;
+using VendorPortal.API.Models.DTO.AdminDto;
 
 namespace VendorPortal.API.Controllers
 {

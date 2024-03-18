@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
-using VendorPortal.API.Models.DTO.RFPApplication;
+using VendorPortal.API.Models.DTO.RFPApplicationDto;
 
 namespace VendorPortal.API.Controllers
 {
