@@ -120,7 +120,7 @@ namespace VendorPortal.API.Controllers
 
         [HttpPut]
         [Route("AcceptReject/{id:Guid}")]
-        public async Task<IActionResult> AcceptReject([FromRoute] Guid id, [FromForm] PurchaseOrderVendorUpdateDto purchaseOrderVendorUpdateDto)
+        public async Task<IActionResult> AcceptReject([FromRoute] Guid id, [FromBody] PurchaseOrderVendorUpdateDto purchaseOrderVendorUpdateDto)
         {
             var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.PurchaseOrderHistories).FirstOrDefaultAsync(x => x.Id == id);
 
