@@ -126,6 +126,9 @@ namespace VendorPortal.API.Controllers
 
             if (purchaseOrderResult != null && purchaseOrderResult.IsAccepted == null)
             {
+                var history = purchaseOrderResult.replicate();
+                dbContext.PurchaseOrderHistories.Add(history);
+                purchaseOrderResult.PreviousRevisionId = history.Id;
                 if (purchaseOrderVendorUpdateDto.IsAccepted)
                 {
                     purchaseOrderResult.Comment = purchaseOrderVendorUpdateDto.Comment != null ? purchaseOrderVendorUpdateDto.Comment : "Accepted";
@@ -154,6 +157,9 @@ namespace VendorPortal.API.Controllers
 
             if (purchaseOrderResult != null)
             {
+                var history = purchaseOrderResult.replicate();
+                dbContext.PurchaseOrderHistories.Add(history);
+                purchaseOrderResult.PreviousRevisionId = history.Id;
                 purchaseOrderResult.OrderNo = purchaseOrderUpdateDto.OrderNo;
                 purchaseOrderResult.VendorId = purchaseOrderUpdateDto.VendorId;
                 purchaseOrderResult.ExpectedDelivery = purchaseOrderUpdateDto.ExpectedDelivery;
