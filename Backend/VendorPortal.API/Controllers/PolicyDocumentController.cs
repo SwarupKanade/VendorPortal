@@ -147,6 +147,7 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(policyDocumentResult.DocumentPath);
             dbContext.PolicyDocuments.Remove(policyDocumentResult);
             await dbContext.SaveChangesAsync();
             return NoContent();

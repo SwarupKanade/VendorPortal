@@ -149,6 +149,7 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(newsResult.ImagePath);
             dbContext.Newss.Remove(newsResult);
             await dbContext.SaveChangesAsync();
             return NoContent();

@@ -187,7 +187,7 @@ namespace VendorPortal.API.Controllers
             {
                 return NotFound();
             }
-
+            Delete(productResult.ImagePath);
             dbContext.Products.Remove(productResult);
             await dbContext.SaveChangesAsync();
             return NoContent();

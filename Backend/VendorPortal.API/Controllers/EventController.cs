@@ -151,6 +151,7 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(eventResult.ImagePath);
             dbContext.Events.Remove(eventResult);
             await dbContext.SaveChangesAsync();
             return NoContent();

@@ -147,7 +147,7 @@ namespace VendorPortal.API.Controllers
             {
                 return NotFound();
             }
-
+            Delete(bannerResult.ImagePath);
             dbContext.Banners.Remove(bannerResult);
             await dbContext.SaveChangesAsync();
             return NoContent();

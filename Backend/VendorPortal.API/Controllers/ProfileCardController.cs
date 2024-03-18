@@ -211,6 +211,7 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(profileCardResult.ImagePath);
             dbContext.ProfileCards.Remove(profileCardResult);
             await dbContext.SaveChangesAsync();
             return NoContent();
