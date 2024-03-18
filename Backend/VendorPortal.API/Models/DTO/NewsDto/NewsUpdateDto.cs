@@ -1,10 +1,10 @@
-﻿namespace VendorPortal.API.Models.DTO.Event
+﻿namespace VendorPortal.API.Models.DTO.NewsDto
 {
-    public class EventUpdateDto
+    public class NewsUpdateDto
     {
+        public Guid Id { get; set; }
         public string Title { get; set; }
         public IFormFile? Image { get; set; }
-        public DateTime EventDateTime { get; set; }
         public string Content { get; set; }
         public bool IsActive { get; set; }
     }

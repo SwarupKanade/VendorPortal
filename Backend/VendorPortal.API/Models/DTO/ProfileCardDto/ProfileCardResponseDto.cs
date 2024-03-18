@@ -1,6 +1,4 @@
-﻿using VendorPortal.API.Models.Domain;
-
-namespace VendorPortal.API.Models.DTO.ProfileCard
+﻿namespace VendorPortal.API.Models.DTO.ProfileCardDto
 {
     public class ProfileCardResponseDto
     {

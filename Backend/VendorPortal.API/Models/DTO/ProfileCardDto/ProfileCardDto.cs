@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.ProfileCard
+﻿namespace VendorPortal.API.Models.DTO.ProfileCardDto
 {
     public class ProfileCardDto
     {

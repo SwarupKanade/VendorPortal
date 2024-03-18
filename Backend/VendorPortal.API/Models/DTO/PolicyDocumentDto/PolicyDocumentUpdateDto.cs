@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.PolicyDocument
+﻿namespace VendorPortal.API.Models.DTO.PolicyDocumentDto
 {
     public class PolicyDocumentUpdateDto
     {

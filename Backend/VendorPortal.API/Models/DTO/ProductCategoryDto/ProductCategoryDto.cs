@@ -1,4 +1,4 @@
-namespace VendorPortal.API.Models.DTO.ProductCategory
+namespace VendorPortal.API.Models.DTO.ProductCategoryDto
 {
     public class ProductCategoryDto
     {

@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.Banner
+﻿namespace VendorPortal.API.Models.DTO.BannerDto
 {
     public class BannerDto
     {

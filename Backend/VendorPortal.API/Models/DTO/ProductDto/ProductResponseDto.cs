@@ -1,6 +1,4 @@
-﻿using VendorPortal.API.Models.Domain;
-
-namespace VendorPortal.API.Models.DTO.Product
+﻿namespace VendorPortal.API.Models.DTO.ProductDto
 {
     public class ProductResponseDto
     {

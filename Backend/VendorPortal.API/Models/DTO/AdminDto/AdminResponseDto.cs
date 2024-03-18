@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.Admin
+﻿namespace VendorPortal.API.Models.DTO.AdminDto
 {
     public class AdminResponseDto
     {

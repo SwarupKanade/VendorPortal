@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace VendorPortal.API.Models.DTO.Admin
+namespace VendorPortal.API.Models.DTO.AdminDto
 {
     public class AdminDto
     {

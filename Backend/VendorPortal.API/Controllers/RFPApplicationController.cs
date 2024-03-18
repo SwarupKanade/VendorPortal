@@ -57,7 +57,7 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            var rfpAppResult = await dbContext.RFPApplications.FirstOrDefaultAsync(x => x.Id == id);
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).FirstOrDefaultAsync(x => x.Id == id);
 
             if (rfpAppResult != null)
             {
@@ -73,7 +73,7 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var rfpAppResult = await dbContext.RFPApplications.ToListAsync();
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).ToListAsync();
 
             if (rfpAppResult != null)
             {

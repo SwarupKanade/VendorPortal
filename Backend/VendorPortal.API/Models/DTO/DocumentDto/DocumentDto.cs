@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.Document
+﻿namespace VendorPortal.API.Models.DTO.DocumentDto
 {
     public class DocumentDto
     {

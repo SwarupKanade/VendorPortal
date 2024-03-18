@@ -1,9 +1,9 @@
-﻿namespace VendorPortal.API.Models.DTO.Event
+﻿namespace VendorPortal.API.Models.DTO.EventDto
 {
-    public class EventDto
+    public class EventUpdateDto
     {
         public string Title { get; set; }
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
         public DateTime EventDateTime { get; set; }
         public string Content { get; set; }
         public bool IsActive { get; set; }

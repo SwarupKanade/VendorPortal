@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.News
+﻿namespace VendorPortal.API.Models.DTO.NewsDto
 {
     public class NewsDto
     {
