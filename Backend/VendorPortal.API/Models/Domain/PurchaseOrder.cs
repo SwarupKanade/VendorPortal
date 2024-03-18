@@ -1,8 +1,11 @@
-﻿namespace VendorPortal.API.Models.Domain
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace VendorPortal.API.Models.Domain
 {
     public class PurchaseOrder
     {
         public Guid Id { get; set; }
+        public Guid? PreviousRevisionId { get; set; }
         public int OrderNo { get; set; }
         public string VendorId { get; set; }
         public DateTime ReleaseDate { get; set; }
@@ -20,6 +23,32 @@
 
         // Navigation Property
         public UserProfile Vendor { get; set; }
-        
+
+        public PurchaseOrderHistory replicate()
+        {
+            var purchaseOrderHistory = new PurchaseOrderHistory
+            {
+                PreviousRevisionId = this.PreviousRevisionId,
+                OrderNo = this.OrderNo,
+                VendorId = this.VendorId,
+                ReleaseDate = this.ReleaseDate,
+                ExpectedDelivery = this.ExpectedDelivery,
+                DocumentPath = this.DocumentPath,
+                OrderAmount = this.OrderAmount,
+                TotalGRN = this.TotalGRN,
+                Invoice = this.Invoice,
+                IsAccepted = this.IsAccepted,
+                AcceptedOn = this.AcceptedOn,
+                IsActive = this.IsActive,
+                CreatedOn = this.CreatedOn,
+                LastModifiedOn = this.LastModifiedOn,
+                Comment = this.Comment
+            };
+
+            // Add the new PurchaseOrderHistory object to the context
+            return purchaseOrderHistory;
+        }
+
+
     }
 }
