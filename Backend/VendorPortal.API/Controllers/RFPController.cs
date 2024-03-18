@@ -162,7 +162,7 @@ namespace VendorPortal.API.Controllers
 
         private void ValidateFileUpload(IFormFile document)
         {
-            var allowedExtensions = new string[] { ".jpg", ".jpeg", ".png", ".pdf" };
+            var allowedExtensions = new string[] { ".pdf" };
 
             if (!allowedExtensions.Contains(Path.GetExtension(document.FileName).ToLower()))
             {

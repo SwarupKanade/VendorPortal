@@ -10,7 +10,6 @@ namespace VendorPortal.API.Models.DTO.RFPApplication
         public string DocumentPath { get; set; }
         public string Comment { get; set; }
         public string VendorName { get; set; }
-        public VendorCategory VendorCategory { get; set; }
         public RFP RFP { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }

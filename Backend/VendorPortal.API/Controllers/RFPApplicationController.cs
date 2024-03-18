@@ -40,6 +40,7 @@ namespace VendorPortal.API.Controllers
                     RFPId = rfpApplicationDto.RFPId,
                     VendorId = rfpApplicationDto.VendorId,
                     Comment = rfpApplicationDto.Comment,
+                    DocumentPath = docPath,
                     CreatedOn = DateTime.Now,
                     LastModifiedOn = DateTime.Now,
                 };
@@ -58,7 +59,7 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).Include(x => x.Vendor).ThenInclude(x => x.VendorCategory).FirstOrDefaultAsync(x => x.Id == id);
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).ThenInclude(x => x.VendorCategory).Include(x => x.Vendor).FirstOrDefaultAsync(x => x.Id == id);
 
             if (rfpAppResult != null)
             {
@@ -70,7 +71,6 @@ namespace VendorPortal.API.Controllers
                     DocumentPath = rfpAppResult.DocumentPath,
                     Comment = rfpAppResult.Comment,
                     VendorName = rfpAppResult.Vendor.Name,
-                    VendorCategory = rfpAppResult.Vendor.VendorCategory,
                     RFP = rfpAppResult.RFP,
                     CreatedOn = rfpAppResult.CreatedOn,
                     LastModifiedOn = rfpAppResult.LastModifiedOn,
@@ -87,7 +87,7 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).Include(x => x.Vendor).ThenInclude(x => x.VendorCategory).ToListAsync();
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).ThenInclude(x => x.VendorCategory).Include(x => x.Vendor).ToListAsync();
 
             if (rfpAppResult != null)
             {
@@ -102,7 +102,6 @@ namespace VendorPortal.API.Controllers
                         DocumentPath = rfpApp.DocumentPath,
                         Comment = rfpApp.Comment,
                         VendorName = rfpApp.Vendor.Name,
-                        VendorCategory = rfpApp.Vendor.VendorCategory,
                         RFP = rfpApp.RFP,
                         CreatedOn = rfpApp.CreatedOn,
                         LastModifiedOn = rfpApp.LastModifiedOn,
@@ -127,6 +126,7 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(rfpAppResult.DocumentPath);
             dbContext.RFPApplications.Remove(rfpAppResult);
             await dbContext.SaveChangesAsync();
             return NoContent();
