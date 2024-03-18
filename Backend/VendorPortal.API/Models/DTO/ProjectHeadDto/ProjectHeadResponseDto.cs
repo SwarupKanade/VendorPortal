@@ -1,4 +1,4 @@
-﻿namespace VendorPortal.API.Models.DTO.ProjectHead
+﻿namespace VendorPortal.API.Models.DTO.ProjectHeadDto
 {
     public class ProjectHeadResponseDto
     {

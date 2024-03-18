@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace VendorPortal.API.Models.DTO.VendorCategory
+namespace VendorPortal.API.Models.DTO.VendorCategoryDto
 {
     public class VendorCategoryDto
     {

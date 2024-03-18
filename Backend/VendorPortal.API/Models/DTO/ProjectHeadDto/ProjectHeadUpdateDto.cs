@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace VendorPortal.API.Models.DTO.ProjectHead
+namespace VendorPortal.API.Models.DTO.ProjectHeadDto
 {
     public class ProjectHeadUpdateDto
     {

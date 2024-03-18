@@ -45,7 +45,7 @@ namespace VendorPortal.API.Controllers
                     IsActive = purchaseOrderDto.IsActive,
                     CreatedOn = DateTime.Now,
                     LastModifiedOn = DateTime.Now,
-                    PurchaseOrderHistories = new List<PurchaseOrderHistory>()
+                    Comment = "Created Purchase Order"
                 };
 
                 await dbContext.PurchaseOrders.AddAsync(purchaseOrder);
@@ -62,7 +62,7 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.PurchaseOrderHistories).FirstOrDefaultAsync(x => x.Id == id);
+            var purchaseOrderResult = await dbContext.PurchaseOrders.FirstOrDefaultAsync(x => x.Id == id);
 
             if (purchaseOrderResult != null)
             {
@@ -78,7 +78,7 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.PurchaseOrderHistories).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.ToListAsync();
 
             if (purchaseOrderResult != null)
             {
@@ -93,7 +93,7 @@ namespace VendorPortal.API.Controllers
         [Route("AllActive")]
         public async Task<IActionResult> GetActive()
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.PurchaseOrderHistories).Where(x => x.IsActive).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Where(x => x.IsActive).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
@@ -108,7 +108,7 @@ namespace VendorPortal.API.Controllers
         [Route("Vendor/{id:Guid}")]
         public async Task<IActionResult> GetByVendorId([FromRoute] string id)
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.PurchaseOrderHistories).Where(x => x.IsActive && x.VendorId == id).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Where(x => x.IsActive && x.VendorId == id).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
@@ -122,19 +122,19 @@ namespace VendorPortal.API.Controllers
         [Route("AcceptReject/{id:Guid}")]
         public async Task<IActionResult> AcceptReject([FromRoute] Guid id, [FromBody] PurchaseOrderVendorUpdateDto purchaseOrderVendorUpdateDto)
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.PurchaseOrderHistories).FirstOrDefaultAsync(x => x.Id == id);
+            var purchaseOrderResult = await dbContext.PurchaseOrders.FirstOrDefaultAsync(x => x.Id == id);
 
             if (purchaseOrderResult != null && purchaseOrderResult.IsAccepted == null)
             {
                 if (purchaseOrderVendorUpdateDto.IsAccepted)
                 {
-                    purchaseOrderResult.Accept(purchaseOrderVendorUpdateDto.Comment);
+                    purchaseOrderResult.Comment = purchaseOrderVendorUpdateDto.Comment != null ? purchaseOrderVendorUpdateDto.Comment : "Accepted";
                     purchaseOrderResult.IsAccepted = purchaseOrderVendorUpdateDto.IsAccepted;
                     purchaseOrderResult.AcceptedOn = DateTime.Now;
                 }
                 else
                 {
-                    purchaseOrderResult.Reject(purchaseOrderVendorUpdateDto.Comment);
+                    purchaseOrderResult.Comment = purchaseOrderVendorUpdateDto.Comment;
                     purchaseOrderResult.IsAccepted = purchaseOrderVendorUpdateDto.IsAccepted;
                 }
 
