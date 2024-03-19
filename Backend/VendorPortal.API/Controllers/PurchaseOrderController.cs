@@ -227,6 +227,31 @@ namespace VendorPortal.API.Controllers
             return NoContent();
         }
 
+        [HttpGet]
+        [Route("History/{id:Guid}")]
+        public async Task<IActionResult> GetHistory([FromRoute] Guid id)
+        {
+            var mainResult = await dbContext.PurchaseOrders.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (mainResult != null)
+            {
+                List<PurchaseOrderHistory> allResult = new List<PurchaseOrderHistory>();
+                if (mainResult.PreviousRevisionId == null)
+                {
+                    return Ok(allResult); //No History
+                }
+                var historyResult = await dbContext.PurchaseOrderHistories.FirstOrDefaultAsync(x => x.Id == mainResult.PreviousRevisionId);
+                allResult.Add(historyResult);
+                while (historyResult.PreviousRevisionId != null)
+                {
+                    historyResult = await dbContext.PurchaseOrderHistories.FirstOrDefaultAsync(x => x.Id == historyResult.PreviousRevisionId);
+                    allResult.Add(historyResult);
+                }
+                return Ok(allResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
 
         private async Task<string> Upload(IFormFile image)
         {
