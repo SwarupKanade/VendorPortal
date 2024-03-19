@@ -46,24 +46,29 @@ namespace VendorPortal.API.Controllers
             return Ok(newProject);
 
         }
-        
+
 
         private async Task AddNotification(string projectHeadId, string projectName)
         {
-            var projectHeadNotification = new NotificationProjectHead
+            if (!string.IsNullOrEmpty(projectHeadId))
             {
-                ProjectHeadId = projectHeadId,
-                Content = $"You have been added to the new project: {projectName}",
-                CreatedAt = DateTime.Now
-            };
+                var projectHeadNotification = new NotificationProjectHead
+                {
+                    ProjectHeadId = projectHeadId,
+                    Content = $"You have been added to the new project: {projectName}",
+                    CreatedAt = DateTime.Now
+                };
+
+                await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+            }
 
             var adminNotification = new NotificationAdmin
             {
+                AdminId = "9312dd12-c005-49b9-aa19-3dbf679642b0", // Assuming this is the admin id
                 Content = $"Project Head {projectHeadId} is added to {projectName}",
                 CreatedAt = DateTime.Now
             };
 
-            await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
             await dbContext.AdminNotifications.AddAsync(adminNotification);
             await dbContext.SaveChangesAsync();
         }
