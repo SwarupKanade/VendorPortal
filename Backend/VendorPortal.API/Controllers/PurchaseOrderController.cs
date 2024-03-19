@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
+using VendorPortal.API.Models.DTO.ProjectHeadDto;
 using VendorPortal.API.Models.DTO.PurchaseOrderDto;
+using VendorPortal.API.Models.DTO.PurchaseOrderVendorResponseDto;
 
 namespace VendorPortal.API.Controllers
 {
@@ -108,11 +110,28 @@ namespace VendorPortal.API.Controllers
         [Route("Vendor/{id:Guid}")]
         public async Task<IActionResult> GetByVendorId([FromRoute] string id)
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Where(x => x.IsActive && x.VendorId == id).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Where(x => x.IsActive && x.VendorId == id).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
-                return Ok(purchaseOrderResult);
+                List<PurchaseOrderVendorResponseDto> allResult = new List<PurchaseOrderVendorResponseDto>();
+                foreach (var purchaseOrder in purchaseOrderResult)
+                {
+                    var newpurchaseOrder = new PurchaseOrderVendorResponseDto
+                    {
+                        Id = purchaseOrder.Id,
+                        OrderNo = purchaseOrder.OrderNo,
+                        VendorId = purchaseOrder.VendorId,
+                        VendorName = purchaseOrder.Vendor.Name,
+                        ReleaseDate = purchaseOrder.ReleaseDate,
+                        ExpectedDelivery = purchaseOrder.ExpectedDelivery,
+                        OrderAmount = purchaseOrder.OrderAmount,
+                        IsAccepted = purchaseOrder.IsAccepted,
+                    };
+                    allResult.Add(newpurchaseOrder);
+                }
+
+                return Ok(allResult);
             }
 
             return BadRequest("Something went wrong");

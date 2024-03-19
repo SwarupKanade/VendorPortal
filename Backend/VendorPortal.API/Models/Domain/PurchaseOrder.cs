@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace VendorPortal.API.Models.Domain
+﻿namespace VendorPortal.API.Models.Domain
 {
     public class PurchaseOrder
     {
@@ -45,7 +43,6 @@ namespace VendorPortal.API.Models.Domain
                 Comment = this.Comment
             };
 
-            // Add the new PurchaseOrderHistory object to the context
             return purchaseOrderHistory;
         }
 
