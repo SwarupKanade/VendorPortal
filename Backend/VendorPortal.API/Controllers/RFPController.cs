@@ -47,6 +47,12 @@ namespace VendorPortal.API.Controllers
                 await dbContext.RFPs.AddAsync(rfp);
                 await dbContext.SaveChangesAsync();
 
+                // Notify the admin
+                // Notify the admin by admin ID
+                var adminId = "9312dd12-c005-49b9-aa19-3dbf679642b0"; // Replace this with the actual admin ID
+                await AddAdminNotification(adminId, $"RFP '{rfpDto.Title}' is created.");
+
+
                 // Notify users with the specified VendorCategoryId
                 var usersToNotify = await dbContext.Users.Where(u => u.VendorCategoryId == rfpDto.VendorCategoryId).ToListAsync();
                 foreach (var user in usersToNotify)
@@ -70,6 +76,18 @@ namespace VendorPortal.API.Controllers
             }
         }
 
+        private async Task AddAdminNotification(string adminId, string content)
+        {
+            var adminNotification = new NotificationAdmin
+            {
+                AdminId = adminId,
+                Content = content,
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.AdminNotifications.AddAsync(adminNotification);
+            await dbContext.SaveChangesAsync();
+        }
 
 
         private async Task AddVendorNotification(string userId, string content)
