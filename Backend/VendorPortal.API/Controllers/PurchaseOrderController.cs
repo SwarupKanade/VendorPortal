@@ -127,6 +127,7 @@ namespace VendorPortal.API.Controllers
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         OrderAmount = purchaseOrder.OrderAmount,
                         IsAccepted = purchaseOrder.IsAccepted,
+                        DocumentPath = purchaseOrder.DocumentPath,
                     };
                     allResult.Add(newpurchaseOrder);
                 }
@@ -185,6 +186,10 @@ namespace VendorPortal.API.Controllers
                 purchaseOrderResult.OrderAmount = purchaseOrderUpdateDto.OrderAmount;
                 purchaseOrderResult.IsActive = purchaseOrderUpdateDto.IsActive;
                 purchaseOrderResult.LastModifiedOn = DateTime.Now;
+
+                // After Rejection Edit Purchase Order for Reapply
+                purchaseOrderResult.IsAccepted = null;
+                purchaseOrderResult.AcceptedOn = null;
 
                 if (purchaseOrderUpdateDto.Document != null)
                 {

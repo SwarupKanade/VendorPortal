@@ -3,4 +3,6 @@
 /bin
 /Files
 /Migrations
-appsettings.json
+/appsettings.json
+/VendorPortal.API.csproj
+/Program.cs
