@@ -248,12 +248,16 @@ namespace VendorPortal.API.Controllers
                 purchaseOrderResult.ExpectedDelivery = purchaseOrderUpdateDto.ExpectedDelivery;
                 purchaseOrderResult.OrderAmount = purchaseOrderUpdateDto.OrderAmount;
                 purchaseOrderResult.IsActive = purchaseOrderUpdateDto.IsActive;
+                purchaseOrderResult.Comment = "Update";
                 purchaseOrderResult.LastModifiedOn = DateTime.Now;
 
-                // After Rejection Edit Purchase Order for Reapply
-                purchaseOrderResult.IsAccepted = null;
-                purchaseOrderResult.AcceptedOn = null;
-
+                if(purchaseOrderResult.IsAccepted == false)
+                {
+                    // After Rejection Edit Purchase Order for Reapply
+                    purchaseOrderResult.IsAccepted = null;
+                    purchaseOrderResult.AcceptedOn = null;
+                }
+                
                 if (purchaseOrderUpdateDto.Document != null)
                 {
                     ValidateFileUpload(purchaseOrderUpdateDto.Document);
