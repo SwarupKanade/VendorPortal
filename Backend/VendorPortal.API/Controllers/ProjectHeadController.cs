@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
+using VendorPortal.API.Models.DTO;
 using VendorPortal.API.Models.DTO.ProjectHeadDto;
 
 namespace VendorPortal.API.Controllers
@@ -54,6 +56,30 @@ namespace VendorPortal.API.Controllers
             }
 
             return BadRequest("Something went wrong");
+        }
+
+        [HttpPost]
+        [Route("ChangePassword/{Id:Guid}")]
+        public async Task<IActionResult> ChangePassword([FromRoute] string Id, [FromBody] ChangePasswordDto passwordDto)
+        {
+            var head = await userManager.Users.FirstOrDefaultAsync(x => x.Id == Id);
+            if (passwordDto.CurrentPassword == passwordDto.NewPassword)
+            {
+                return BadRequest("Old and New Password are same, Please enter new password.");
+            }
+            else if (passwordDto.NewPassword != passwordDto.ConfirmPassword)
+            {
+                return BadRequest("New Password and Confirm Password are mis-matching.");
+            }
+            else
+            {
+                var passResult = await userManager.ChangePasswordAsync(head, passwordDto.CurrentPassword, passwordDto.NewPassword);
+                if (passResult.Succeeded)
+                {
+                    return Ok("Password Changed");
+                }
+            }
+            return BadRequest("Error");
         }
 
         [HttpGet]

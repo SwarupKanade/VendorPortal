@@ -194,6 +194,29 @@ namespace VendorPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
+        [HttpPost]
+        [Route("ChangePassword/{Id:Guid}")]
+        public async Task<IActionResult> ChangePassword([FromRoute] string Id, [FromBody] ChangePasswordDto passwordDto)
+        {
+            var vendor = await userManager.Users.FirstOrDefaultAsync(x => x.Id == Id);
+            if (passwordDto.CurrentPassword == passwordDto.NewPassword)
+            {
+                return BadRequest("Old and New Password are same, Please enter new password.");
+            }
+            else if (passwordDto.NewPassword != passwordDto.ConfirmPassword)
+            {
+                return BadRequest("New Password and Confirm Password are mis-matching.");
+            }
+            else
+            {
+                var passResult = await userManager.ChangePasswordAsync(vendor, passwordDto.CurrentPassword, passwordDto.NewPassword);
+                if (passResult.Succeeded)
+                {
+                    return Ok("Password Changed");
+                }
+            }
+            return BadRequest("Error");
+        }
 
         [HttpPut]
         [Route("{id:Guid}")]
