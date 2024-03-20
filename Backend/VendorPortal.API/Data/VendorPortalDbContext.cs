@@ -29,17 +29,11 @@ namespace VendorPortal.API.Data
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<RFPApplication> RFPApplications { get; set; }
         public DbSet<PurchaseOrderHistory> PurchaseOrderHistories { get; set; }
-
         public DbSet<GRN> GRNs { get; set; }
-
+        public DbSet<Invoice> Invoices { get; set; }
         public DbSet<NotificationProjectHead> NotificationsProjectHead { get; set; }
-
         public DbSet<NotificationAdmin> AdminNotifications { get; set; }
-
         public DbSet<NotificationVendor> VendorNotifications { get; set; }
-
-
-
 
 
         protected override void OnModelCreating(ModelBuilder builder)
