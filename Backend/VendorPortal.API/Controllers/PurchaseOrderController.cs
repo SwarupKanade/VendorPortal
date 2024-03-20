@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
-using VendorPortal.API.Models.DTO.ProjectHeadDto;
 using VendorPortal.API.Models.DTO.PurchaseOrderDto;
+using VendorPortal.API.Models.DTO.PurchaseOrderResponseDto;
 using VendorPortal.API.Models.DTO.PurchaseOrderVendorResponseDto;
 
 namespace VendorPortal.API.Controllers
@@ -64,15 +64,31 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.FirstOrDefaultAsync(x => x.Id == id);
+            var purchaseOrder = await dbContext.PurchaseOrders.Include(x => x.Vendor).FirstOrDefaultAsync(x => x.Id == id);
 
-            if (purchaseOrderResult != null)
+            if (purchaseOrder != null)
             {
-                return Ok(purchaseOrderResult);
+                var newpurchaseOrder = new PurchaseOrderResponseDto
+                {
+                    Id = purchaseOrder.Id,
+                    OrderNo = purchaseOrder.OrderNo,
+                    VendorId = purchaseOrder.VendorId,
+                    VendorName = purchaseOrder.Vendor.Name,
+                    ReleaseDate = purchaseOrder.ReleaseDate,
+                    ExpectedDelivery = purchaseOrder.ExpectedDelivery,
+                    DocumentPath = purchaseOrder.DocumentPath,
+                    OrderAmount = purchaseOrder.OrderAmount,
+                    TotalGRN = purchaseOrder.TotalGRN,
+                    Invoice = purchaseOrder.Invoice,
+                    IsAccepted = purchaseOrder.IsAccepted,
+                    AcceptedOn = purchaseOrder.AcceptedOn,
+                    IsActive = purchaseOrder.IsActive,
+                    CreatedOn = purchaseOrder.CreatedOn,
+                    Comment = purchaseOrder.Comment
+                };
+                return Ok(newpurchaseOrder);
             }
-
             return BadRequest("Something went wrong");
-
         }
 
 
@@ -80,11 +96,35 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
-                return Ok(purchaseOrderResult);
+                List<PurchaseOrderResponseDto> allResult = new List<PurchaseOrderResponseDto>();
+                foreach (var purchaseOrder in purchaseOrderResult)
+                {
+                    var newpurchaseOrder = new PurchaseOrderResponseDto
+                    {
+                        Id = purchaseOrder.Id,
+                        OrderNo = purchaseOrder.OrderNo,
+                        VendorId = purchaseOrder.VendorId,
+                        VendorName = purchaseOrder.Vendor.Name,
+                        ReleaseDate = purchaseOrder.ReleaseDate,
+                        ExpectedDelivery = purchaseOrder.ExpectedDelivery,
+                        DocumentPath = purchaseOrder.DocumentPath,
+                        OrderAmount = purchaseOrder.OrderAmount,
+                        TotalGRN = purchaseOrder.TotalGRN,
+                        Invoice = purchaseOrder.Invoice,
+                        IsAccepted = purchaseOrder.IsAccepted,
+                        AcceptedOn = purchaseOrder.AcceptedOn,
+                        IsActive = purchaseOrder.IsActive,
+                        CreatedOn = purchaseOrder.CreatedOn,
+                        Comment = purchaseOrder.Comment
+                    };
+                    allResult.Add(newpurchaseOrder);
+                }
+
+                return Ok(allResult);
             }
 
             return BadRequest("Something went wrong");
@@ -95,11 +135,34 @@ namespace VendorPortal.API.Controllers
         [Route("AllActive")]
         public async Task<IActionResult> GetActive()
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Where(x => x.IsActive).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Where(x => x.IsActive).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
-                return Ok(purchaseOrderResult);
+                List<PurchaseOrderResponseDto> allResult = new List<PurchaseOrderResponseDto>();
+                foreach (var purchaseOrder in purchaseOrderResult)
+                {
+                    var newpurchaseOrder = new PurchaseOrderResponseDto
+                    {
+                        Id = purchaseOrder.Id,
+                        OrderNo = purchaseOrder.OrderNo,
+                        VendorId = purchaseOrder.VendorId,
+                        VendorName = purchaseOrder.Vendor.Name,
+                        ReleaseDate = purchaseOrder.ReleaseDate,
+                        ExpectedDelivery = purchaseOrder.ExpectedDelivery,
+                        DocumentPath = purchaseOrder.DocumentPath,
+                        OrderAmount = purchaseOrder.OrderAmount,
+                        TotalGRN = purchaseOrder.TotalGRN,
+                        Invoice = purchaseOrder.Invoice,
+                        IsAccepted = purchaseOrder.IsAccepted,
+                        AcceptedOn = purchaseOrder.AcceptedOn,
+                        IsActive = purchaseOrder.IsActive,
+                        CreatedOn = purchaseOrder.CreatedOn,
+                        Comment = purchaseOrder.Comment
+                    };
+                    allResult.Add(newpurchaseOrder);
+                }
+                return Ok(allResult);
             }
 
             return BadRequest("Something went wrong");
@@ -232,6 +295,31 @@ namespace VendorPortal.API.Controllers
             return NoContent();
         }
 
+        [HttpGet]
+        [Route("History/{id:Guid}")]
+        public async Task<IActionResult> GetHistory([FromRoute] Guid id)
+        {
+            var mainResult = await dbContext.PurchaseOrders.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (mainResult != null)
+            {
+                List<PurchaseOrderHistory> allResult = new List<PurchaseOrderHistory>();
+                if (mainResult.PreviousRevisionId == null)
+                {
+                    return Ok(allResult); //No History
+                }
+                var historyResult = await dbContext.PurchaseOrderHistories.FirstOrDefaultAsync(x => x.Id == mainResult.PreviousRevisionId);
+                allResult.Add(historyResult);
+                while (historyResult.PreviousRevisionId != null)
+                {
+                    historyResult = await dbContext.PurchaseOrderHistories.FirstOrDefaultAsync(x => x.Id == historyResult.PreviousRevisionId);
+                    allResult.Add(historyResult);
+                }
+                return Ok(allResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
 
         private async Task<string> Upload(IFormFile image)
         {
