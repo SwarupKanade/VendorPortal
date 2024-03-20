@@ -4,3 +4,5 @@
 /Files
 /Migrations
 appsettings.json
+VendorPortal.API.csproj
+Program.cs
