@@ -6,6 +6,5 @@
         public Guid PurchaseOrderId { get; set; }
         public bool ShipmentStatus { get; set; }
         public IFormFile? Document { get; set; }
-        public string Comment { get; set; }
     }
 }
