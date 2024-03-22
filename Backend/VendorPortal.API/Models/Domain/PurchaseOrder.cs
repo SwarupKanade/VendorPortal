@@ -6,6 +6,7 @@
         public Guid? PreviousRevisionId { get; set; }
         public int OrderNo { get; set; }
         public string VendorId { get; set; }
+        public Guid ProjectId { get; set; }
         public DateTime ReleaseDate { get; set; }
         public DateTime ExpectedDelivery { get; set; }
         public string DocumentPath { get; set; }
@@ -21,6 +22,7 @@
 
         // Navigation Property
         public UserProfile Vendor { get; set; }
+        public Project Project { get; set; }
 
         public PurchaseOrderHistory replicate()
         {
@@ -29,6 +31,7 @@
                 PreviousRevisionId = this.PreviousRevisionId,
                 OrderNo = this.OrderNo,
                 VendorId = this.VendorId,
+                ProjectId = this.ProjectId,
                 ReleaseDate = this.ReleaseDate,
                 ExpectedDelivery = this.ExpectedDelivery,
                 DocumentPath = this.DocumentPath,

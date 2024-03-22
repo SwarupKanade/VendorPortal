@@ -1,4 +1,6 @@
-﻿namespace VendorPortal.API.Models.DTO.PurchaseOrderVendorResponseDto
+﻿using VendorPortal.API.Models.Domain;
+
+namespace VendorPortal.API.Models.DTO.PurchaseOrderVendorResponseDto
 {
     public class PurchaseOrderVendorResponseDto
     {
@@ -11,6 +13,7 @@
         public DateTime ExpectedDelivery { get; set; }
         public int OrderAmount { get; set; }
         public bool? IsAccepted { get; set; }
-        
+        public Project Project { get; set; }
+
     }
 }
