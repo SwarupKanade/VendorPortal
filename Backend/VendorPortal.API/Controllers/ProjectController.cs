@@ -74,14 +74,11 @@ namespace VendorPortal.API.Controllers
         }
 
 
-
         [HttpGet]
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-
             var projectResult = await dbContext.Projects.Include("UserProfile").FirstOrDefaultAsync(x => x.Id == id);
-
 
             if (projectResult != null)
             {
@@ -96,6 +93,36 @@ namespace VendorPortal.API.Controllers
                     ProjectHeadName = projectResult.UserProfile.Name,
                 };
 
+                return Ok(project);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] ProjectUpdateDto projectUpdateDto)
+        {
+            var projectResult = await dbContext.Projects.Include("UserProfile").FirstOrDefaultAsync(x => x.Id == id);
+
+            if (projectResult != null)
+            {
+                projectResult.Name = projectUpdateDto.Name;
+                projectResult.ProjectStatus = projectUpdateDto.ProjectStatus;
+                projectResult.Description = projectUpdateDto.Description;
+
+                await dbContext.SaveChangesAsync();
+
+                var project = new ProjectResponseDto
+                {
+                    Id = projectResult.Id,
+                    Name = projectResult.Name,
+                    ProjectStatus = projectResult.ProjectStatus,
+                    CreatedOn = projectResult.CreatedOn,
+                    Description = projectResult.Description,
+                    ProjectHeadId = projectResult.UserProfile.Id,
+                    ProjectHeadName = projectResult.UserProfile.Name,
+                };
                 return Ok(project);
             }
 
