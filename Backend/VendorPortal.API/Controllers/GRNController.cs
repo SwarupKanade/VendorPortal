@@ -153,7 +153,6 @@ namespace VendorPortal.API.Controllers
             if (grnResult != null)
             {
                 grnResult.GRNNo = grnUpdateDto.GRNNo;
-                grnResult.PurchaseOrderId = grnUpdateDto.PurchaseOrderId;
                 grnResult.ShipmentStatus = grnUpdateDto.ShipmentStatus;
                 grnResult.Comment = "Update";
                 grnResult.LastModifiedOn = DateTime.Now;

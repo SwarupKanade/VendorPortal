@@ -151,7 +151,6 @@ namespace VendorPortal.API.Controllers
             {
                 invoiceResult.InvoiceNo = invoiceUpdateDto.InvoiceNo;
                 invoiceResult.Amount = invoiceUpdateDto.Amount;
-                invoiceResult.GRNId = invoiceUpdateDto.GRNId;
                 invoiceResult.PaymentStatus = invoiceUpdateDto.PaymentStatus;
                 invoiceResult.DueDate = invoiceUpdateDto.DueDate;
                 invoiceResult.Comment = "Update";
