@@ -40,6 +40,7 @@ namespace VendorPortal.API.Controllers
                 {
                     OrderNo = purchaseOrderDto.OrderNo,
                     VendorId = purchaseOrderDto.VendorId,
+                    ProjectId = purchaseOrderDto.ProjectId,
                     ReleaseDate = DateTime.Now,
                     ExpectedDelivery = purchaseOrderDto.ExpectedDelivery,
                     OrderAmount = purchaseOrderDto.OrderAmount,
@@ -64,7 +65,7 @@ namespace VendorPortal.API.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
-            var purchaseOrder = await dbContext.PurchaseOrders.Include(x => x.Vendor).FirstOrDefaultAsync(x => x.Id == id);
+            var purchaseOrder = await dbContext.PurchaseOrders.Include(x => x.Vendor).Include(x => x.Project).FirstOrDefaultAsync(x => x.Id == id);
 
             if (purchaseOrder != null)
             {
@@ -84,7 +85,8 @@ namespace VendorPortal.API.Controllers
                     AcceptedOn = purchaseOrder.AcceptedOn,
                     IsActive = purchaseOrder.IsActive,
                     CreatedOn = purchaseOrder.CreatedOn,
-                    Comment = purchaseOrder.Comment
+                    Comment = purchaseOrder.Comment,
+                    Project = purchaseOrder.Project,
                 };
                 return Ok(newpurchaseOrder);
             }
@@ -96,7 +98,7 @@ namespace VendorPortal.API.Controllers
         [Route("All")]
         public async Task<IActionResult> GetAll()
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Include(x => x.Project).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
@@ -119,7 +121,8 @@ namespace VendorPortal.API.Controllers
                         AcceptedOn = purchaseOrder.AcceptedOn,
                         IsActive = purchaseOrder.IsActive,
                         CreatedOn = purchaseOrder.CreatedOn,
-                        Comment = purchaseOrder.Comment
+                        Comment = purchaseOrder.Comment,
+                        Project = purchaseOrder.Project,
                     };
                     allResult.Add(newpurchaseOrder);
                 }
@@ -135,7 +138,7 @@ namespace VendorPortal.API.Controllers
         [Route("AllActive")]
         public async Task<IActionResult> GetActive()
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Where(x => x.IsActive).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Include(x => x.Project).Where(x => x.IsActive).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
@@ -158,7 +161,8 @@ namespace VendorPortal.API.Controllers
                         AcceptedOn = purchaseOrder.AcceptedOn,
                         IsActive = purchaseOrder.IsActive,
                         CreatedOn = purchaseOrder.CreatedOn,
-                        Comment = purchaseOrder.Comment
+                        Comment = purchaseOrder.Comment,
+                        Project = purchaseOrder.Project
                     };
                     allResult.Add(newpurchaseOrder);
                 }
@@ -173,7 +177,7 @@ namespace VendorPortal.API.Controllers
         [Route("Vendor/{id:Guid}")]
         public async Task<IActionResult> GetByVendorId([FromRoute] string id)
         {
-            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Where(x => x.IsActive && x.VendorId == id).ToListAsync();
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Include(x => x.Project).Where(x => x.IsActive && x.VendorId == id).ToListAsync();
 
             if (purchaseOrderResult != null)
             {
@@ -191,6 +195,40 @@ namespace VendorPortal.API.Controllers
                         OrderAmount = purchaseOrder.OrderAmount,
                         IsAccepted = purchaseOrder.IsAccepted,
                         DocumentPath = purchaseOrder.DocumentPath,
+                        Project = purchaseOrder.Project,
+                    };
+                    allResult.Add(newpurchaseOrder);
+                }
+
+                return Ok(allResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("Project/{id:Guid}")]
+        public async Task<IActionResult> GetByProjectId([FromRoute] Guid id)
+        {
+            var purchaseOrderResult = await dbContext.PurchaseOrders.Include(x => x.Vendor).Include(x => x.Project).Where(x => x.IsActive && x.ProjectId == id).ToListAsync();
+
+            if (purchaseOrderResult != null)
+            {
+                List<PurchaseOrderVendorResponseDto> allResult = new List<PurchaseOrderVendorResponseDto>();
+                foreach (var purchaseOrder in purchaseOrderResult)
+                {
+                    var newpurchaseOrder = new PurchaseOrderVendorResponseDto
+                    {
+                        Id = purchaseOrder.Id,
+                        OrderNo = purchaseOrder.OrderNo,
+                        VendorId = purchaseOrder.VendorId,
+                        VendorName = purchaseOrder.Vendor.Name,
+                        ReleaseDate = purchaseOrder.ReleaseDate,
+                        ExpectedDelivery = purchaseOrder.ExpectedDelivery,
+                        OrderAmount = purchaseOrder.OrderAmount,
+                        IsAccepted = purchaseOrder.IsAccepted,
+                        DocumentPath = purchaseOrder.DocumentPath,
+                        Project = purchaseOrder.Project,
                     };
                     allResult.Add(newpurchaseOrder);
                 }
@@ -244,7 +282,6 @@ namespace VendorPortal.API.Controllers
                 dbContext.PurchaseOrderHistories.Add(history);
                 purchaseOrderResult.PreviousRevisionId = history.Id;
                 purchaseOrderResult.OrderNo = purchaseOrderUpdateDto.OrderNo;
-                purchaseOrderResult.VendorId = purchaseOrderUpdateDto.VendorId;
                 purchaseOrderResult.ExpectedDelivery = purchaseOrderUpdateDto.ExpectedDelivery;
                 purchaseOrderResult.OrderAmount = purchaseOrderUpdateDto.OrderAmount;
                 purchaseOrderResult.IsActive = purchaseOrderUpdateDto.IsActive;

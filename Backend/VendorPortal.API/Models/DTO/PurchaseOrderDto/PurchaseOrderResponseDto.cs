@@ -1,4 +1,6 @@
-﻿namespace VendorPortal.API.Models.DTO.PurchaseOrderResponseDto
+﻿using VendorPortal.API.Models.Domain;
+
+namespace VendorPortal.API.Models.DTO.PurchaseOrderResponseDto
 {
     public class PurchaseOrderResponseDto
     {
@@ -17,6 +19,6 @@
         public bool IsActive { get; set; }
         public DateTime CreatedOn { get; set; }
         public string Comment { get; set; }
-
+        public Project Project { get; set; }
     }
 }

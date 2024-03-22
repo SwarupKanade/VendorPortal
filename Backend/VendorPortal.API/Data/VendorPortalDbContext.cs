@@ -98,6 +98,7 @@ namespace VendorPortal.API.Data
                 .HasForeignKey(vcd => vcd.VendorCategoryId);
 
             builder.Entity<PurchaseOrder>().HasOne(u => u.Vendor).WithMany().HasForeignKey(u => u.VendorId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<PurchaseOrder>().HasOne(u => u.Project).WithMany().HasForeignKey(u => u.ProjectId).OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<RFPApplication>().HasOne(u => u.Vendor).WithMany().HasForeignKey(u => u.VendorId).OnDelete(DeleteBehavior.Restrict);
             builder.Entity<RFPApplication>().HasOne(u => u.RFP).WithMany().HasForeignKey(u => u.RFPId).OnDelete(DeleteBehavior.Restrict);

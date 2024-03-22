@@ -85,11 +85,27 @@ namespace VendorPortal.API.Controllers
             return BadRequest("Something went wrong");
 
         }
+
+
         [HttpGet]
         [Route("PurchaseOrder/{id:Guid}")]
         public async Task<IActionResult> GetByPurchaseOrderId([FromRoute] Guid id)
         {
             var grnResult = await dbContext.GRNs.Include(x => x.PurchaseOrder).Where(x => x.PurchaseOrderId == id).ToListAsync();
+
+            if (grnResult != null)
+            {
+                return Ok(grnResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("Vendor/{id:Guid}")]
+        public async Task<IActionResult> GetByVendorId([FromRoute] string id)
+        {
+            var grnResult = await dbContext.GRNs.Include(x => x.PurchaseOrder).Where(x => x.PurchaseOrder.VendorId == id).ToListAsync();
 
             if (grnResult != null)
             {
@@ -137,7 +153,6 @@ namespace VendorPortal.API.Controllers
             if (grnResult != null)
             {
                 grnResult.GRNNo = grnUpdateDto.GRNNo;
-                grnResult.PurchaseOrderId = grnUpdateDto.PurchaseOrderId;
                 grnResult.ShipmentStatus = grnUpdateDto.ShipmentStatus;
                 grnResult.Comment = "Update";
                 grnResult.LastModifiedOn = DateTime.Now;

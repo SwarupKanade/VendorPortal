@@ -99,6 +99,20 @@ namespace VendorPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
+        [HttpGet]
+        [Route("Vendor/{id:Guid}")]
+        public async Task<IActionResult> GetByVendorId([FromRoute] string id)
+        {
+            var invoiceResult = await dbContext.Invoices.Include(x => x.GRN).ThenInclude(x => x.PurchaseOrder).Where(x => x.GRN.PurchaseOrder.VendorId == id).ToListAsync();
+
+            if (invoiceResult != null)
+            {
+                return Ok(invoiceResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
         [HttpPut]
         [Route("AcceptReject/{id:Guid}")]
         public async Task<IActionResult> AcceptReject([FromRoute] Guid id, [FromBody] InvoiceProjectHeadUpdateDto invoiceProjectHeadUpdateDto)
@@ -137,7 +151,6 @@ namespace VendorPortal.API.Controllers
             {
                 invoiceResult.InvoiceNo = invoiceUpdateDto.InvoiceNo;
                 invoiceResult.Amount = invoiceUpdateDto.Amount;
-                invoiceResult.GRNId = invoiceUpdateDto.GRNId;
                 invoiceResult.PaymentStatus = invoiceUpdateDto.PaymentStatus;
                 invoiceResult.DueDate = invoiceUpdateDto.DueDate;
                 invoiceResult.Comment = "Update";

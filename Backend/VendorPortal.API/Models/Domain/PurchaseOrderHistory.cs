@@ -6,6 +6,7 @@
         public Guid? PreviousRevisionId { get; set; }
         public int OrderNo { get; set; }
         public string VendorId { get; set; }
+        public Guid ProjectId { get; set; }
         public DateTime ReleaseDate { get; set; }
         public DateTime ExpectedDelivery { get; set; }
         public string DocumentPath { get; set; }
