@@ -12,8 +12,8 @@ namespace VendorPortal.API.Models.DTO.PurchaseOrderResponseDto
         public DateTime ExpectedDelivery { get; set; }
         public string DocumentPath { get; set; }
         public int OrderAmount { get; set; }
-        public string? TotalGRN { get; set; }
-        public string? Invoice { get; set; }
+        public int TotalGRN { get; set; }
+        public bool InvoiceStatus { get; set; }
         public bool? IsAccepted { get; set; }
         public DateTime? AcceptedOn { get; set; }
         public bool IsActive { get; set; }

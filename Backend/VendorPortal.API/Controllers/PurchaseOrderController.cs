@@ -69,6 +69,9 @@ namespace VendorPortal.API.Controllers
 
             if (purchaseOrder != null)
             {
+                var allGRNResult = await dbContext.GRNs.Where(x => x.PurchaseOrderId == purchaseOrder.Id).ToListAsync();
+                var GRNCount = allGRNResult.Count();
+                var invoiceStatus = allGRNResult.All(x => x.InvoiceStatus == true);
                 var newpurchaseOrder = new PurchaseOrderResponseDto
                 {
                     Id = purchaseOrder.Id,
@@ -79,8 +82,8 @@ namespace VendorPortal.API.Controllers
                     ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                     DocumentPath = purchaseOrder.DocumentPath,
                     OrderAmount = purchaseOrder.OrderAmount,
-                    TotalGRN = purchaseOrder.TotalGRN,
-                    Invoice = purchaseOrder.Invoice,
+                    TotalGRN = GRNCount,
+                    InvoiceStatus = invoiceStatus,
                     IsAccepted = purchaseOrder.IsAccepted,
                     AcceptedOn = purchaseOrder.AcceptedOn,
                     IsActive = purchaseOrder.IsActive,
@@ -105,6 +108,9 @@ namespace VendorPortal.API.Controllers
                 List<PurchaseOrderResponseDto> allResult = new List<PurchaseOrderResponseDto>();
                 foreach (var purchaseOrder in purchaseOrderResult)
                 {
+                    var allGRNResult = await dbContext.GRNs.Where(x => x.PurchaseOrderId == purchaseOrder.Id).ToListAsync();
+                    var GRNCount = allGRNResult.Count();
+                    var invoiceStatus = allGRNResult.All(x => x.InvoiceStatus == true);
                     var newpurchaseOrder = new PurchaseOrderResponseDto
                     {
                         Id = purchaseOrder.Id,
@@ -115,8 +121,8 @@ namespace VendorPortal.API.Controllers
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         DocumentPath = purchaseOrder.DocumentPath,
                         OrderAmount = purchaseOrder.OrderAmount,
-                        TotalGRN = purchaseOrder.TotalGRN,
-                        Invoice = purchaseOrder.Invoice,
+                        TotalGRN = GRNCount,
+                        InvoiceStatus = invoiceStatus,
                         IsAccepted = purchaseOrder.IsAccepted,
                         AcceptedOn = purchaseOrder.AcceptedOn,
                         IsActive = purchaseOrder.IsActive,
@@ -145,6 +151,9 @@ namespace VendorPortal.API.Controllers
                 List<PurchaseOrderResponseDto> allResult = new List<PurchaseOrderResponseDto>();
                 foreach (var purchaseOrder in purchaseOrderResult)
                 {
+                    var allGRNResult = await dbContext.GRNs.Where(x => x.PurchaseOrderId == purchaseOrder.Id).ToListAsync();
+                    var GRNCount = allGRNResult.Count();
+                    var invoiceStatus = allGRNResult.All(x => x.InvoiceStatus == true);
                     var newpurchaseOrder = new PurchaseOrderResponseDto
                     {
                         Id = purchaseOrder.Id,
@@ -155,8 +164,8 @@ namespace VendorPortal.API.Controllers
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         DocumentPath = purchaseOrder.DocumentPath,
                         OrderAmount = purchaseOrder.OrderAmount,
-                        TotalGRN = purchaseOrder.TotalGRN,
-                        Invoice = purchaseOrder.Invoice,
+                        TotalGRN = GRNCount,
+                        InvoiceStatus = invoiceStatus,
                         IsAccepted = purchaseOrder.IsAccepted,
                         AcceptedOn = purchaseOrder.AcceptedOn,
                         IsActive = purchaseOrder.IsActive,
@@ -247,9 +256,11 @@ namespace VendorPortal.API.Controllers
 
             if (purchaseOrderResult != null && purchaseOrderResult.IsAccepted == null)
             {
+                //Versioning
                 var history = purchaseOrderResult.replicate();
                 dbContext.PurchaseOrderHistories.Add(history);
                 purchaseOrderResult.PreviousRevisionId = history.Id;
+
                 if (purchaseOrderVendorUpdateDto.IsAccepted)
                 {
                     purchaseOrderResult.Comment = purchaseOrderVendorUpdateDto.Comment != null ? purchaseOrderVendorUpdateDto.Comment : "Accepted";
@@ -278,43 +289,50 @@ namespace VendorPortal.API.Controllers
 
             if (purchaseOrderResult != null)
             {
-                var history = purchaseOrderResult.replicate();
-                dbContext.PurchaseOrderHistories.Add(history);
-                purchaseOrderResult.PreviousRevisionId = history.Id;
-                purchaseOrderResult.OrderNo = purchaseOrderUpdateDto.OrderNo;
-                purchaseOrderResult.ExpectedDelivery = purchaseOrderUpdateDto.ExpectedDelivery;
-                purchaseOrderResult.OrderAmount = purchaseOrderUpdateDto.OrderAmount;
-                purchaseOrderResult.IsActive = purchaseOrderUpdateDto.IsActive;
-                purchaseOrderResult.Comment = "Update";
-                purchaseOrderResult.LastModifiedOn = DateTime.Now;
-
-                if(purchaseOrderResult.IsAccepted == false)
+                if (purchaseOrderResult.IsAccepted == null || purchaseOrderResult.IsAccepted == false)
                 {
+                    //Versioning
+                    var history = purchaseOrderResult.replicate();
+                    dbContext.PurchaseOrderHistories.Add(history);
+                    purchaseOrderResult.PreviousRevisionId = history.Id;
+
+                    purchaseOrderResult.OrderNo = purchaseOrderUpdateDto.OrderNo;
+                    purchaseOrderResult.ExpectedDelivery = purchaseOrderUpdateDto.ExpectedDelivery;
+                    purchaseOrderResult.OrderAmount = purchaseOrderUpdateDto.OrderAmount;
+                    purchaseOrderResult.IsActive = purchaseOrderUpdateDto.IsActive;
+                    purchaseOrderResult.Comment = "Update";
+                    purchaseOrderResult.LastModifiedOn = DateTime.Now;
+
+
                     // After Rejection Edit Purchase Order for Reapply
                     purchaseOrderResult.IsAccepted = null;
                     purchaseOrderResult.AcceptedOn = null;
-                }
-                
-                if (purchaseOrderUpdateDto.Document != null)
-                {
-                    ValidateFileUpload(purchaseOrderUpdateDto.Document);
 
-                    if (ModelState.IsValid)
+                    if (purchaseOrderUpdateDto.Document != null)
                     {
-                        bool del = Delete(purchaseOrderResult.DocumentPath);
-                        if (del)
+                        ValidateFileUpload(purchaseOrderUpdateDto.Document);
+
+                        if (ModelState.IsValid)
                         {
-                            string docPath = await Upload(purchaseOrderUpdateDto.Document);
-                            purchaseOrderResult.DocumentPath = docPath;
+                            bool del = Delete(purchaseOrderResult.DocumentPath);
+                            if (del)
+                            {
+                                string docPath = await Upload(purchaseOrderUpdateDto.Document);
+                                purchaseOrderResult.DocumentPath = docPath;
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(ModelState);
                         }
                     }
-                    else
-                    {
-                        return BadRequest(ModelState);
-                    }
+                    await dbContext.SaveChangesAsync();
+                    return Ok(purchaseOrderResult);
                 }
-                await dbContext.SaveChangesAsync();
-                return Ok(purchaseOrderResult);
+                else
+                {
+                    return BadRequest("Already Accepted So Unable to Update");
+                }
 
             }
             return BadRequest("Something went wrong");
@@ -331,6 +349,7 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(purchaseOrderResult.DocumentPath);
             dbContext.PurchaseOrders.Remove(purchaseOrderResult);
             await dbContext.SaveChangesAsync();
             return NoContent();

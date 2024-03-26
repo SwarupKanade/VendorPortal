@@ -11,8 +11,6 @@
         public DateTime ExpectedDelivery { get; set; }
         public string DocumentPath { get; set; }
         public int OrderAmount { get; set; }
-        public string? TotalGRN { get; set; }
-        public string? Invoice { get; set; }
         public bool? IsAccepted { get; set; }
         public DateTime? AcceptedOn { get; set; }
         public bool IsActive { get; set; }
@@ -36,8 +34,6 @@
                 ExpectedDelivery = this.ExpectedDelivery,
                 DocumentPath = this.DocumentPath,
                 OrderAmount = this.OrderAmount,
-                TotalGRN = this.TotalGRN,
-                Invoice = this.Invoice,
                 IsAccepted = this.IsAccepted,
                 AcceptedOn = this.AcceptedOn,
                 IsActive = this.IsActive,

@@ -9,7 +9,7 @@
         public Guid GRNId { get; set; }
         public bool? IsAccepted { get; set; }
         public DateTime? AcceptedOn { get; set; }
-        public bool PaymentStatus { get; set; }
+        public bool PaymentStatus { get; set; } = false;
         public DateTime DueDate { get;set; }
         public string DocumentPath { get; set; }
         public string Comment { get; set; }

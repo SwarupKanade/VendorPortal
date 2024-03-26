@@ -40,7 +40,6 @@ namespace VendorPortal.API.Controllers
                     SendOn = DateTime.Now,
                     Amount = invoiceDto.Amount,
                     GRNId = invoiceDto.GRNId,
-                    PaymentStatus = invoiceDto.PaymentStatus,
                     DueDate = invoiceDto.DueDate,
                     DocumentPath = docPath,
                     Comment = "Created Invoice",
@@ -142,6 +141,25 @@ namespace VendorPortal.API.Controllers
         }
 
         [HttpPut]
+        [Route("PaymentDone/{id:Guid}")]
+        public async Task<IActionResult> Payment([FromRoute] Guid id)
+        {
+            var invoiceResult = await dbContext.Invoices.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (invoiceResult != null && invoiceResult.IsAccepted == true)
+            {
+                invoiceResult.PaymentStatus = true;
+                invoiceResult.LastModifiedOn = DateTime.Now;
+                var grnResult = await dbContext.GRNs.FirstOrDefaultAsync(x => x.Id == invoiceResult.GRNId);
+                var allInvoicesResult = await dbContext.Invoices.Where(x => x.Id == invoiceResult.GRNId).ToListAsync();
+                grnResult.InvoiceStatus = allInvoicesResult.All(x => x.PaymentStatus == true);
+                await dbContext.SaveChangesAsync();
+                return Ok(invoiceResult);
+            }
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpPut]
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] InvoiceUpdateDto invoiceUpdateDto)
         {
@@ -151,7 +169,6 @@ namespace VendorPortal.API.Controllers
             {
                 invoiceResult.InvoiceNo = invoiceUpdateDto.InvoiceNo;
                 invoiceResult.Amount = invoiceUpdateDto.Amount;
-                invoiceResult.PaymentStatus = invoiceUpdateDto.PaymentStatus;
                 invoiceResult.DueDate = invoiceUpdateDto.DueDate;
                 invoiceResult.Comment = "Update";
                 invoiceResult.LastModifiedOn = DateTime.Now;

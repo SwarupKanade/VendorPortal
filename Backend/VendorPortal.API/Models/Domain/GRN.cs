@@ -9,6 +9,7 @@
         public bool? IsAccepted { get; set; }
         public DateTime? AcceptedOn { get; set; }
         public bool ShipmentStatus { get; set; }
+        public bool InvoiceStatus { get; set; } = false;
         public string DocumentPath { get; set; }
         public string Comment { get; set; }
         public DateTime CreatedOn { get; set; }
