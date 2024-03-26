@@ -40,7 +40,6 @@ namespace VendorPortal.API.Controllers
                     SendOn = DateTime.Now,
                     Amount = invoiceDto.Amount,
                     GRNId = invoiceDto.GRNId,
-                    PaymentStatus = invoiceDto.PaymentStatus,
                     DueDate = invoiceDto.DueDate,
                     DocumentPath = docPath,
                     Comment = "Created Invoice",
@@ -121,6 +120,11 @@ namespace VendorPortal.API.Controllers
 
             if (invoiceResult != null && invoiceResult.IsAccepted == null)
             {
+                //Versioning
+                var history = invoiceResult.replicate();
+                dbContext.InvoiceHistories.Add(history);
+                invoiceResult.PreviousRevisionId = history.Id;
+
                 if (invoiceProjectHeadUpdateDto.IsAccepted)
                 {
                     invoiceResult.Comment = invoiceProjectHeadUpdateDto.Comment != null ? invoiceProjectHeadUpdateDto.Comment : "Accepted";
@@ -142,6 +146,30 @@ namespace VendorPortal.API.Controllers
         }
 
         [HttpPut]
+        [Route("PaymentDone/{id:Guid}")]
+        public async Task<IActionResult> Payment([FromRoute] Guid id)
+        {
+            var invoiceResult = await dbContext.Invoices.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (invoiceResult != null && invoiceResult.IsAccepted == true)
+            {
+                //Versioning
+                var history = invoiceResult.replicate();
+                dbContext.InvoiceHistories.Add(history);
+                invoiceResult.PreviousRevisionId = history.Id;
+
+                invoiceResult.PaymentStatus = true;
+                invoiceResult.LastModifiedOn = DateTime.Now;
+                var grnResult = await dbContext.GRNs.FirstOrDefaultAsync(x => x.Id == invoiceResult.GRNId);
+                var allInvoicesResult = await dbContext.Invoices.Where(x => x.Id == invoiceResult.GRNId).ToListAsync();
+                grnResult.InvoiceStatus = allInvoicesResult.All(x => x.PaymentStatus == true);
+                await dbContext.SaveChangesAsync();
+                return Ok(invoiceResult);
+            }
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpPut]
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] InvoiceUpdateDto invoiceUpdateDto)
         {
@@ -149,40 +177,49 @@ namespace VendorPortal.API.Controllers
 
             if (invoiceResult != null)
             {
-                invoiceResult.InvoiceNo = invoiceUpdateDto.InvoiceNo;
-                invoiceResult.Amount = invoiceUpdateDto.Amount;
-                invoiceResult.PaymentStatus = invoiceUpdateDto.PaymentStatus;
-                invoiceResult.DueDate = invoiceUpdateDto.DueDate;
-                invoiceResult.Comment = "Update";
-                invoiceResult.LastModifiedOn = DateTime.Now;
-
-                if (invoiceResult.IsAccepted == false)
+                if (invoiceResult.IsAccepted == null || invoiceResult.IsAccepted == false)
                 {
+                    //Versioning
+                    var history = invoiceResult.replicate();
+                    dbContext.InvoiceHistories.Add(history);
+                    invoiceResult.PreviousRevisionId = history.Id;
+
+                    invoiceResult.InvoiceNo = invoiceUpdateDto.InvoiceNo;
+                    invoiceResult.Amount = invoiceUpdateDto.Amount;
+                    invoiceResult.DueDate = invoiceUpdateDto.DueDate;
+                    invoiceResult.Comment = "Update";
+                    invoiceResult.LastModifiedOn = DateTime.Now;
+
+
                     // After Rejection Edit Invoice for Reapply
                     invoiceResult.IsAccepted = null;
                     invoiceResult.AcceptedOn = null;
-                }
 
-                if (invoiceUpdateDto.Document != null)
-                {
-                    ValidateFileUpload(invoiceUpdateDto.Document);
-
-                    if (ModelState.IsValid)
+                    if (invoiceUpdateDto.Document != null)
                     {
-                        bool del = Delete(invoiceResult.DocumentPath);
-                        if (del)
+                        ValidateFileUpload(invoiceUpdateDto.Document);
+
+                        if (ModelState.IsValid)
                         {
-                            string docPath = await Upload(invoiceUpdateDto.Document);
-                            invoiceResult.DocumentPath = docPath;
+                            bool del = Delete(invoiceResult.DocumentPath);
+                            if (del)
+                            {
+                                string docPath = await Upload(invoiceUpdateDto.Document);
+                                invoiceResult.DocumentPath = docPath;
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(ModelState);
                         }
                     }
-                    else
-                    {
-                        return BadRequest(ModelState);
-                    }
+                    await dbContext.SaveChangesAsync();
+                    return Ok(invoiceResult);
                 }
-                await dbContext.SaveChangesAsync();
-                return Ok(invoiceResult);
+                else
+                {
+                    return BadRequest("Already Accepted So Unable to Update");
+                }
 
             }
             return BadRequest("Something went wrong");
@@ -199,9 +236,37 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(invoiceResult.DocumentPath);
             dbContext.Invoices.Remove(invoiceResult);
             await dbContext.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("History/{id:Guid}")]
+        public async Task<IActionResult> GetHistory([FromRoute] Guid id)
+        {
+            var mainResult = await dbContext.Invoices.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (mainResult != null)
+            {
+                List<InvoiceHistory> allResult = new List<InvoiceHistory>();
+                if (mainResult.PreviousRevisionId == null)
+                {
+                    return Ok(allResult); //No History
+                }
+
+                var historyResult = await dbContext.InvoiceHistories.FirstOrDefaultAsync(x => x.Id == mainResult.PreviousRevisionId);
+                allResult.Add(historyResult);
+                while (historyResult.PreviousRevisionId != null)
+                {
+                    historyResult = await dbContext.InvoiceHistories.FirstOrDefaultAsync(x => x.Id == historyResult.PreviousRevisionId);
+                    allResult.Add(historyResult);
+                }
+                return Ok(allResult);
+            }
+
+            return BadRequest("Something went wrong");
         }
 
 

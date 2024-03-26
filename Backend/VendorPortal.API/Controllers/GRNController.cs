@@ -123,7 +123,11 @@ namespace VendorPortal.API.Controllers
 
             if (grnResult != null && grnResult.IsAccepted == null)
             {
-                
+                //Versioning
+                var history = grnResult.replicate();
+                dbContext.GRNHistories.Add(history);
+                grnResult.PreviousRevisionId = history.Id;
+
                 if (grnProjectHeadUpdateDto.IsAccepted)
                 {
                     grnResult.Comment = grnProjectHeadUpdateDto.Comment != null ? grnProjectHeadUpdateDto.Comment : "Accepted";
@@ -152,39 +156,51 @@ namespace VendorPortal.API.Controllers
 
             if (grnResult != null)
             {
-                grnResult.GRNNo = grnUpdateDto.GRNNo;
-                grnResult.ShipmentStatus = grnUpdateDto.ShipmentStatus;
-                grnResult.Comment = "Update";
-                grnResult.LastModifiedOn = DateTime.Now;
-
-                if (grnResult.IsAccepted == false)
+                if (grnResult.IsAccepted == null || grnResult.IsAccepted == false)
                 {
+                    //Versioning
+                    var history = grnResult.replicate();
+                    dbContext.GRNHistories.Add(history);
+                    grnResult.PreviousRevisionId = history.Id;
+
+                    grnResult.GRNNo = grnUpdateDto.GRNNo;
+                    grnResult.ShipmentStatus = grnUpdateDto.ShipmentStatus;
+                    grnResult.Comment = "Update";
+                    grnResult.LastModifiedOn = DateTime.Now;
+
                     // After Rejection Edit GRN for Reapply
                     grnResult.IsAccepted = null;
                     grnResult.AcceptedOn = null;
-                }
 
-                if (grnUpdateDto.Document != null)
-                {
-                    ValidateFileUpload(grnUpdateDto.Document);
-
-                    if (ModelState.IsValid)
+                    if (grnUpdateDto.Document != null)
                     {
-                        bool del = Delete(grnResult.DocumentPath);
-                        if (del)
+                        ValidateFileUpload(grnUpdateDto.Document);
+
+                        if (ModelState.IsValid)
                         {
-                            string docPath = await Upload(grnUpdateDto.Document);
-                            grnResult.DocumentPath = docPath;
+                            bool del = Delete(grnResult.DocumentPath);
+                            if (del)
+                            {
+                                string docPath = await Upload(grnUpdateDto.Document);
+                                grnResult.DocumentPath = docPath;
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(ModelState);
                         }
                     }
-                    else
-                    {
-                        return BadRequest(ModelState);
-                    }
-                }
-                await dbContext.SaveChangesAsync();
-                return Ok(grnResult);
 
+                    await dbContext.SaveChangesAsync();
+                    return Ok(grnResult);
+
+                }
+                else
+                {
+                    return BadRequest("Already Accepted So Unable to Update");
+
+                }
+                
             }
             return BadRequest("Something went wrong");
         }
@@ -200,9 +216,37 @@ namespace VendorPortal.API.Controllers
                 return NotFound();
             }
 
+            Delete(grnResult.DocumentPath);
             dbContext.GRNs.Remove(grnResult);
             await dbContext.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("History/{id:Guid}")]
+        public async Task<IActionResult> GetHistory([FromRoute] Guid id)
+        {
+            var mainResult = await dbContext.GRNs.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (mainResult != null)
+            {
+                List<GRNHistory> allResult = new List<GRNHistory>();
+                if (mainResult.PreviousRevisionId == null)
+                {
+                    return Ok(allResult); //No History
+                }
+
+                var historyResult = await dbContext.GRNHistories.FirstOrDefaultAsync(x => x.Id == mainResult.PreviousRevisionId);
+                allResult.Add(historyResult);
+                while (historyResult.PreviousRevisionId != null)
+                {
+                    historyResult = await dbContext.GRNHistories.FirstOrDefaultAsync(x => x.Id == historyResult.PreviousRevisionId);
+                    allResult.Add(historyResult);
+                }
+                return Ok(allResult);
+            }
+
+            return BadRequest("Something went wrong");
         }
 
         private async Task<string> Upload(IFormFile image)

@@ -30,7 +30,9 @@ namespace VendorPortal.API.Data
         public DbSet<RFPApplication> RFPApplications { get; set; }
         public DbSet<PurchaseOrderHistory> PurchaseOrderHistories { get; set; }
         public DbSet<GRN> GRNs { get; set; }
+        public DbSet<GRNHistory> GRNHistories { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceHistory> InvoiceHistories { get; set; }
         public DbSet<NotificationProjectHead> NotificationsProjectHead { get; set; }
         public DbSet<NotificationAdmin> AdminNotifications { get; set; }
         public DbSet<NotificationVendor> VendorNotifications { get; set; }

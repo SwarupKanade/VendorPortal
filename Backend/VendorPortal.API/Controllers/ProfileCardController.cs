@@ -159,7 +159,8 @@ namespace VendorPortal.API.Controllers
                 profileCardResult.Description = profileCardUpdateDto.Description;
                 profileCardResult.Position = profileCardUpdateDto.Position;
                 profileCardResult.IsActive = profileCardUpdateDto.IsActive;
-                profileCardResult.UserId = profileCardUpdateDto.UserId;
+                if(profileCardUpdateDto.UserId != null)
+                    profileCardResult.UserId = profileCardUpdateDto.UserId;
                 profileCardResult.LastModifiedOn = DateTime.Now;
 
                 if (profileCardUpdateDto.Image != null)
