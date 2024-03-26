@@ -4,6 +4,8 @@ namespace VendorPortal.API.Models.DTO.ProjectDto
 {
     public class ProjectDto
     {
+        public Guid Id { get; set; }
+
         [Required]
         public string Name { get; set; }
 

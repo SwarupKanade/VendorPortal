@@ -1,2 +1,4 @@
 Backend/VendorPortal.API/appsettings.json
 Backend/VendorPortal.API/VendorPortal.API.csproj
+Backend/VendorPortal.API/Migrations/20240320114143_InitialMigration.cs
+Backend/VendorPortal.API/Migrations/20240320114143_InitialMigration.Designer.cs

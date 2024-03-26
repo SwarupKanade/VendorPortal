@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
 using VendorPortal.API.Models.DTO;
@@ -16,12 +17,13 @@ namespace VendorPortal.API.Controllers
 
         private readonly UserManager<UserProfile> userManager;
         private readonly EmailService emailService;
+        private readonly VendorPortalDbContext dbContext;
 
-
-        public ProjectHeadController(UserManager<UserProfile> userManager, EmailService emailService)
+        public ProjectHeadController(UserManager<UserProfile> userManager, EmailService emailService , VendorPortalDbContext dbContext)
         {
             this.userManager = userManager;
             this.emailService = emailService;
+            this.dbContext = dbContext;
         }
 
 
@@ -50,6 +52,13 @@ namespace VendorPortal.API.Controllers
 
                 if (projectHeadResult.Succeeded)
                 {
+                    // Send welcome notification to admin with appropriate route
+                    await AddAdminNotification(newProjectHead.Name, "/projectHead-list");
+
+
+                    // Send welcome notification to project head
+                    await AddProjectHeadNotification(newProjectHead.Id.ToString(), newProjectHead.Name);
+
                     SendWelcomeEmail(newProjectHead);
                     return Ok("ProjectHead was registered! Please login.");
                 }
@@ -57,6 +66,49 @@ namespace VendorPortal.API.Controllers
 
             return BadRequest("Something went wrong");
         }
+
+        private async Task AddAdminNotification(string projectHeadName, string route)
+        {
+            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
+
+            // Find the admin users with the specified role
+            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
+
+            // Iterate through each admin user and send them the notification
+            foreach (var adminUser in adminUsers)
+            {
+                var adminNotification = new NotificationAdmin
+                {
+                    AdminId = adminUser.Id,
+                    Content = $"Project head '{projectHeadName}' was registered.",
+                    Route = route, // Set the appropriate route for the notification
+                    CreatedAt = DateTime.Now
+                };
+
+                await dbContext.AdminNotifications.AddAsync(adminNotification);
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
+
+
+
+
+        private async Task AddProjectHeadNotification(string projectHeadId, string projectHeadName)
+        {
+            var projectHeadNotification = new NotificationProjectHead
+            {
+                ProjectHeadId = projectHeadId,
+                Content = $"Welcome to SCIQUS Vendor Portal, {projectHeadName}!",
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
+
+
 
         [HttpPost]
         [Route("ChangePassword/{Id:Guid}")]

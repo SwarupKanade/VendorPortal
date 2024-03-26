@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 using VendorPortal.API.Data;
 using VendorPortal.API.Mail;
 using VendorPortal.API.Models.Domain;
@@ -80,6 +81,16 @@ namespace VendorPortal.API.Controllers
                             await dbContext.SaveChangesAsync();
                         }
                     }
+
+                    // Send welcome notification
+                    // Send welcome notification with route information
+                    await AddVendorNotification(newVendor.Id, $"Welcome to SCIQUS Vendor Portal {newVendor.Name} , Click here to complete verification", "/upload-document");
+
+                    // Send welcome notification
+                    // Send welcome notification to admin with the appropriate route
+                    await AddAdminNotification1(newVendor.Name, "/vendor-list");
+
+
                     SendWelcomeEmail(newVendor);
                     return Ok("Vendor was registered! Please login.");
                 }
@@ -88,6 +99,32 @@ namespace VendorPortal.API.Controllers
 
             return BadRequest("Something went wrong");
         }
+
+        private async Task AddAdminNotification1(string vendorName, string route)
+        {
+            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
+
+            // Find the admin users with the specified role
+            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
+
+            // Iterate through each admin user and send them the notification
+            foreach (var adminUser in adminUsers)
+            {
+                var adminNotification = new NotificationAdmin
+                {
+                    AdminId = adminUser.Id,
+                    Content = $"Vendor '{vendorName}' was registered.",
+                    Route = route, // Set the appropriate route for the notification
+                    CreatedAt = DateTime.Now
+                };
+
+                await dbContext.AdminNotifications.AddAsync(adminNotification);
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
+
+
 
         [HttpGet]
         [Route("{id:Guid}")]
@@ -300,6 +337,18 @@ namespace VendorPortal.API.Controllers
 
                     await dbContext.SaveChangesAsync();
 
+                    var vendor = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == documentResult.VendorId);
+
+                    if (vendor != null)
+                    {
+                        // Construct the appropriate route with the document ID
+                        var route = $"/document-verification/{vendor.Id}";
+
+                        // Send admin notification with the appropriate route
+                        await AddAdminNotification($"{vendor.Name} (ID: {vendor.Id}) has uploaded a document for verification. Please click here to view.", route);
+                    }
+
+
                     return Ok($"{documentResult.Document.Name} Uploaded");
                 }
                 else
@@ -310,7 +359,34 @@ namespace VendorPortal.API.Controllers
             }
 
             return BadRequest("Something went wrong");
+  
+      }
+        private async Task AddAdminNotification(string content, string route)
+        {
+            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
+
+            // Find the admin users with the specified role
+            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
+
+            // Iterate through each admin user and send them the notification
+            foreach (var adminUser in adminUsers)
+            {
+                var adminNotification = new NotificationAdmin
+                {
+                    AdminId = adminUser.Id,
+                    Content = content,
+                    Route = route, // Set the appropriate route for the notification
+                    CreatedAt = DateTime.Now
+                };
+
+                await dbContext.AdminNotifications.AddAsync(adminNotification);
+            }
+
+            await dbContext.SaveChangesAsync();
         }
+
+
+
 
         [HttpPost]
         [Route("DocVerify")]
@@ -320,13 +396,22 @@ namespace VendorPortal.API.Controllers
 
             if (documentResult != null)
             {
-                if (!vendorDocVerifyDto.DocumentVerified)
+                bool documentVerified = vendorDocVerifyDto.DocumentVerified;
+
+                if (!documentVerified)
                 {
+                    // Document rejected
                     bool del = Delete(documentResult.DocumentPath);
                     if (del) { documentResult.DocumentPath = null; }
+                    documentResult.Comment = vendorDocVerifyDto.Comment;
                 }
-                documentResult.IsVerified = vendorDocVerifyDto.DocumentVerified;
-                documentResult.Comment = vendorDocVerifyDto.Comment;
+                else
+                {
+                    // Document approved
+                    documentResult.Comment = "Approved";
+                }
+
+                documentResult.IsVerified = documentVerified;
 
                 var allDocs = await dbContext.DocumentsUploads.Where(x => x.VendorId == documentResult.VendorId).ToListAsync();
 
@@ -338,12 +423,21 @@ namespace VendorPortal.API.Controllers
                         if (!doc.IsVerified)
                         {
                             isVerify = false;
+                            break; // No need to continue checking if one document is not verified
                         }
                     }
 
                     var vendor = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == documentResult.VendorId);
                     vendor.IsVerified = isVerify;
                     await dbContext.SaveChangesAsync();
+
+                    // Send appropriate notification based on verification status
+                    string notificationMessage = documentVerified ?
+                        $"Your document '{documentResult.Document.Name}' has been approved." :
+                        $"Your document '{documentResult.Document.Name}' has been rejected. Please upload the document again.";
+                    string route = "/upload-document"; // Route is the same for both cases
+
+                    await AddVendorNotification(vendor.Id, notificationMessage, route);
                 }
 
                 await dbContext.SaveChangesAsync();
@@ -353,6 +447,23 @@ namespace VendorPortal.API.Controllers
 
             return BadRequest("Something went wrong");
         }
+
+
+        private async Task AddVendorNotification(string userId, string content, string route)
+        {
+            var vendorNotification = new NotificationVendor
+            {
+                UserId = userId,
+                Content = content,
+                Route = route, // Include the route associated with the notification
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.VendorNotifications.AddAsync(vendorNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
+
 
         private async Task<string> Upload(IFormFile document, string id)
         {

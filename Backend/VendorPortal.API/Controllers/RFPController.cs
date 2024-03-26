@@ -15,13 +15,15 @@ namespace VendorPortal.API.Controllers
         private readonly VendorPortalDbContext dbContext;
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly UserManager<UserProfile> userManager;
 
         public RFPController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor , UserManager<UserProfile> userManager)
         {
             this.dbContext = dbContext;
             this.webHostEnvironment = webHostEnvironment;
             this.httpContextAccessor = httpContextAccessor;
+            this.userManager = userManager;
         }
 
 
@@ -48,24 +50,22 @@ namespace VendorPortal.API.Controllers
                 await dbContext.SaveChangesAsync();
 
                 // Notify the admin
-                // Notify the admin by admin ID
-                var adminId = "9312dd12-c005-49b9-aa19-3dbf679642b0"; // Replace this with the actual admin ID
-                await AddAdminNotification(adminId, $"RFP '{rfpDto.Title}' is created.");
+                await AddAdminNotification($"RFP '{rfpDto.Title}' is created.", "/rfp");
 
 
                 // Notify users with the specified VendorCategoryId
                 var usersToNotify = await dbContext.Users.Where(u => u.VendorCategoryId == rfpDto.VendorCategoryId).ToListAsync();
                 foreach (var user in usersToNotify)
                 {
-                    await AddVendorNotification(user.Id, $"RFP '{rfpDto.Title}' is created.");
+                    await AddVendorNotification(user.Id, $"RFP '{rfpDto.Title}' is created." , "/");
                 }
 
                 // Get the project associated with the project ID
                 var project = await dbContext.Projects.FirstOrDefaultAsync(p => p.Id == rfpDto.ProjectId);
                 if (project != null && project.ProjectHeadId != null)
                 {
-                    // Notify the project head
-                    await AddProjectHeadNotification(project.ProjectHeadId, $"RFP '{rfpDto.Title}' is created.");
+                    // Notify the project head and redirect to /assigned-project route
+                    await AddProjectHeadNotification(project.ProjectHeadId, $"RFP '{rfpDto.Title}' is created.", "/assigned-project");
                 }
 
                 return Ok(rfp);
@@ -76,26 +76,41 @@ namespace VendorPortal.API.Controllers
             }
         }
 
-        private async Task AddAdminNotification(string adminId, string content)
+        private async Task AddAdminNotification(string content, string route)
         {
-            var adminNotification = new NotificationAdmin
-            {
-                AdminId = adminId,
-                Content = content,
-                CreatedAt = DateTime.Now
-            };
+            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
 
-            await dbContext.AdminNotifications.AddAsync(adminNotification);
+            // Find the admin users with the specified role
+            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
+
+            // Iterate through each admin user and send them the notification
+            foreach (var adminUser in adminUsers)
+            {
+                var adminNotification = new NotificationAdmin
+                {
+                    AdminId = adminUser.Id,
+                    Content = content,
+                    Route = route, // Set the appropriate route for the notification
+                    CreatedAt = DateTime.Now
+                };
+
+                await dbContext.AdminNotifications.AddAsync(adminNotification);
+            }
+
             await dbContext.SaveChangesAsync();
         }
 
 
-        private async Task AddVendorNotification(string userId, string content)
+
+
+
+        private async Task AddVendorNotification(string userId, string content , string route)
         {
             var vendorNotification = new NotificationVendor
             {
                 UserId = userId,
                 Content = content,
+                Route = route, // Set the appropriate route for the project head notification
                 CreatedAt = DateTime.Now
             };
 
@@ -103,12 +118,13 @@ namespace VendorPortal.API.Controllers
             await dbContext.SaveChangesAsync();
         }
 
-        private async Task AddProjectHeadNotification(string projectHeadId, string content)
+        private async Task AddProjectHeadNotification(string projectHeadId, string content, string route)
         {
             var projectHeadNotification = new NotificationProjectHead
             {
                 ProjectHeadId = projectHeadId,
                 Content = content,
+                Route = route, // Set the appropriate route for the project head notification
                 CreatedAt = DateTime.Now
             };
 

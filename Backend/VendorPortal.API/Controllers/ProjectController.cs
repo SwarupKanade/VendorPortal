@@ -1,4 +1,5 @@
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -14,10 +15,12 @@ namespace VendorPortal.API.Controllers
     {
 
         private readonly VendorPortalDbContext dbContext;
+        private readonly UserManager<UserProfile> userManager;
 
-        public ProjectController(VendorPortalDbContext dbContext)
+        public ProjectController(VendorPortalDbContext dbContext , UserManager<UserProfile> userManager)
         {
             this.dbContext = dbContext;
+            this.userManager = userManager;
         }
 
 
@@ -37,41 +40,54 @@ namespace VendorPortal.API.Controllers
             };
 
             await dbContext.Projects.AddAsync(newProject);
+            await dbContext.SaveChangesAsync();
 
             // Add notification for the project head
-            await AddNotification(projectDto.ProjectHeadId, projectDto.Name);
+            await AddNotification(projectDto.ProjectHeadId, projectDto.Name, newProject.Id.ToString());
 
-
-            await dbContext.SaveChangesAsync();
             return Ok(newProject);
 
         }
 
-
-        private async Task AddNotification(string projectHeadId, string projectName)
+        private async Task AddNotification(string projectHeadId, string projectName, string projectId)
         {
-            if (!string.IsNullOrEmpty(projectHeadId))
+            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
+
+            // Find the admin users with the specified role
+            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
+
+            // Iterate through each admin user and send them the notification
+            foreach (var adminUser in adminUsers)
             {
-                var projectHeadNotification = new NotificationProjectHead
+                if (!string.IsNullOrEmpty(projectHeadId))
                 {
-                    ProjectHeadId = projectHeadId,
-                    Content = $"You have been added to the new project: {projectName}",
+                    var projectHeadNotification = new NotificationProjectHead
+                    {
+                        ProjectHeadId = projectHeadId,
+                        Content = $"You have been added to the new project: {projectName}",
+                        Route = "/assigned-project", // Set the appropriate route for project head notification
+                        CreatedAt = DateTime.Now
+                    };
+
+                    await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+                }
+
+                var adminNotification = new NotificationAdmin
+                {
+                    AdminId = adminUser.Id,
+                    Content = $"Project Head {projectHeadId} is added to {projectName}",
+                    Route = "/projectHead-list", // Set the appropriate route for admin notification
                     CreatedAt = DateTime.Now
                 };
 
-                await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+                await dbContext.AdminNotifications.AddAsync(adminNotification);
             }
 
-            var adminNotification = new NotificationAdmin
-            {
-                AdminId = "9312dd12-c005-49b9-aa19-3dbf679642b0", // Assuming this is the admin id
-                Content = $"Project Head {projectHeadId} is added to {projectName}",
-                CreatedAt = DateTime.Now
-            };
-
-            await dbContext.AdminNotifications.AddAsync(adminNotification);
             await dbContext.SaveChangesAsync();
         }
+
+
+
 
 
         [HttpGet]
