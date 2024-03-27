@@ -100,6 +100,7 @@ namespace VendorPortal.API.Controllers
             {
                 ProjectHeadId = projectHeadId,
                 Content = $"Welcome to SCIQUS Vendor Portal, {projectHeadName}!",
+                Route = "/",
                 CreatedAt = DateTime.Now
             };
 
