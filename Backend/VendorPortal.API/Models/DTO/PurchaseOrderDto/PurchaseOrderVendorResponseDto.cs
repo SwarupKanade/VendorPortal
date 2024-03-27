@@ -8,6 +8,7 @@ namespace VendorPortal.API.Models.DTO.PurchaseOrderVendorResponseDto
         public int OrderNo { get; set; }
         public string VendorId { get; set; }
         public string VendorName { get; set; }
+        public string OrganizationName { get; set; }
         public string DocumentPath { get; set; }
         public DateTime ReleaseDate { get; set; }
         public DateTime ExpectedDelivery { get; set; }
