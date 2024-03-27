@@ -314,12 +314,8 @@ namespace VendorPortal.API.Controllers
 
                         if (ModelState.IsValid)
                         {
-                            bool del = Delete(purchaseOrderResult.DocumentPath);
-                            if (del)
-                            {
-                                string docPath = await Upload(purchaseOrderUpdateDto.Document);
-                                purchaseOrderResult.DocumentPath = docPath;
-                            }
+                            string docPath = await Upload(purchaseOrderUpdateDto.Document);
+                            purchaseOrderResult.DocumentPath = docPath;
                         }
                         else
                         {

@@ -201,12 +201,8 @@ namespace VendorPortal.API.Controllers
 
                         if (ModelState.IsValid)
                         {
-                            bool del = Delete(invoiceResult.DocumentPath);
-                            if (del)
-                            {
-                                string docPath = await Upload(invoiceUpdateDto.Document);
-                                invoiceResult.DocumentPath = docPath;
-                            }
+                            string docPath = await Upload(invoiceUpdateDto.Document);
+                            invoiceResult.DocumentPath = docPath;
                         }
                         else
                         {

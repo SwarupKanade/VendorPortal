@@ -41,7 +41,7 @@ namespace VendorPortal.API.Controllers
                 var rfp = new RFP
                 {
                     Title = rfpDto.Title,
-                    Document = docPath,
+                    DocumentPath = docPath,
                     ProjectId = rfpDto.ProjectId,
                     VendorCategoryId = rfpDto.VendorCategoryId,
                     EndDate = rfpDto.EndDate,
@@ -177,11 +177,11 @@ namespace VendorPortal.API.Controllers
 
                     if (ModelState.IsValid)
                     {
-                        bool del = Delete(rfpResult.Document);
+                        bool del = Delete(rfpResult.DocumentPath);
                         if (del)
                         {
                             string docPath = await Upload(rfpUpdateDto.Document);
-                            rfpResult.Document = docPath;
+                            rfpResult.DocumentPath = docPath;
                         }
                     }
                     else
