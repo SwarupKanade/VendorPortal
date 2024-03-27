@@ -178,12 +178,8 @@ namespace VendorPortal.API.Controllers
 
                         if (ModelState.IsValid)
                         {
-                            bool del = Delete(grnResult.DocumentPath);
-                            if (del)
-                            {
-                                string docPath = await Upload(grnUpdateDto.Document);
-                                grnResult.DocumentPath = docPath;
-                            }
+                            string docPath = await Upload(grnUpdateDto.Document);
+                            grnResult.DocumentPath = docPath;
                         }
                         else
                         {

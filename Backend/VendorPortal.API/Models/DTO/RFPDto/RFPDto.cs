@@ -8,7 +8,7 @@ namespace VendorPortal.API.Models.DTO.RFPDto
         [Required]
         public string Title { get; set; }
 
-        public IFormFile DocumentFile { get; set; }
+        public IFormFile Document { get; set; }
 
         [Required]
         public Guid ProjectId { get; set; }
