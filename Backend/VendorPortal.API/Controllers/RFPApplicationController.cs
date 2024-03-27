@@ -115,6 +115,38 @@ namespace VendorPortal.API.Controllers
 
         }
 
+        [HttpGet]
+        [Route("RFP/{id:Guid}")]
+        public async Task<IActionResult> GetApplicationByRFPId([FromRoute] Guid id)
+        {
+            var rfpAppResult = await dbContext.RFPApplications.Include(x => x.RFP).ThenInclude(x => x.VendorCategory).Include(x => x.Vendor).Where(x => x.RFP.Id == id).ToListAsync();
+
+            if (rfpAppResult != null)
+            {
+                List<RFPApplicationResponseDto> rfpApplications = new List<RFPApplicationResponseDto>();
+                foreach (var rfpApp in rfpAppResult)
+                {
+                    var newRFPApp = new RFPApplicationResponseDto
+                    {
+                        Id = rfpApp.Id,
+                        RFPId = rfpApp.RFPId,
+                        VendorId = rfpApp.VendorId,
+                        DocumentPath = rfpApp.DocumentPath,
+                        Comment = rfpApp.Comment,
+                        VendorName = rfpApp.Vendor.Name,
+                        RFP = rfpApp.RFP,
+                        CreatedOn = rfpApp.CreatedOn,
+                        LastModifiedOn = rfpApp.LastModifiedOn,
+                    };
+                    rfpApplications.Add(newRFPApp);
+                }
+                return Ok(rfpApplications);
+            }
+
+            return BadRequest("Something went wrong");
+
+        }
+
         [HttpDelete]
         [Route("{id:Guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
