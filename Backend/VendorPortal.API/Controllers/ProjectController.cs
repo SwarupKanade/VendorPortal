@@ -88,8 +88,6 @@ namespace VendorPortal.API.Controllers
 
 
 
-
-
         [HttpGet]
         [Route("{id:Guid}")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)

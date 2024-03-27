@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Data;
 using VendorPortal.API.Models.Domain;
+using VendorPortal.API.Models.DTO.GRNDto;
 using VendorPortal.API.Models.DTO.RFPDto;
 
 namespace VendorPortal.API.Controllers
@@ -18,7 +19,7 @@ namespace VendorPortal.API.Controllers
         private readonly UserManager<UserProfile> userManager;
 
         public RFPController(VendorPortalDbContext dbContext, IWebHostEnvironment webHostEnvironment,
-            IHttpContextAccessor httpContextAccessor , UserManager<UserProfile> userManager)
+            IHttpContextAccessor httpContextAccessor, UserManager<UserProfile> userManager)
         {
             this.dbContext = dbContext;
             this.webHostEnvironment = webHostEnvironment;
@@ -31,16 +32,16 @@ namespace VendorPortal.API.Controllers
         [Route("Add")]
         public async Task<IActionResult> Add([FromForm] RFPDto rfpDto)
         {
-            ValidateFileUpload(rfpDto.DocumentFile);
+            ValidateFileUpload(rfpDto.Document);
 
             if (ModelState.IsValid)
             {
-                string docPath = await Upload(rfpDto.DocumentFile);
+                string docPath = await Upload(rfpDto.Document);
 
                 var rfp = new RFP
                 {
                     Title = rfpDto.Title,
-                    Document = docPath,
+                    DocumentPath = docPath,
                     ProjectId = rfpDto.ProjectId,
                     VendorCategoryId = rfpDto.VendorCategoryId,
                     EndDate = rfpDto.EndDate,
@@ -57,7 +58,7 @@ namespace VendorPortal.API.Controllers
                 var usersToNotify = await dbContext.Users.Where(u => u.VendorCategoryId == rfpDto.VendorCategoryId).ToListAsync();
                 foreach (var user in usersToNotify)
                 {
-                    await AddVendorNotification(user.Id, $"RFP '{rfpDto.Title}' is created." , "/");
+                    await AddVendorNotification(user.Id, $"RFP '{rfpDto.Title}' is created.", "/");
                 }
 
                 // Get the project associated with the project ID
@@ -75,63 +76,6 @@ namespace VendorPortal.API.Controllers
                 return BadRequest(ModelState);
             }
         }
-
-        private async Task AddAdminNotification(string content, string route)
-        {
-            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
-
-            // Find the admin users with the specified role
-            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
-
-            // Iterate through each admin user and send them the notification
-            foreach (var adminUser in adminUsers)
-            {
-                var adminNotification = new NotificationAdmin
-                {
-                    AdminId = adminUser.Id,
-                    Content = content,
-                    Route = route, // Set the appropriate route for the notification
-                    CreatedAt = DateTime.Now
-                };
-
-                await dbContext.AdminNotifications.AddAsync(adminNotification);
-            }
-
-            await dbContext.SaveChangesAsync();
-        }
-
-
-
-
-
-        private async Task AddVendorNotification(string userId, string content , string route)
-        {
-            var vendorNotification = new NotificationVendor
-            {
-                UserId = userId,
-                Content = content,
-                Route = route, // Set the appropriate route for the project head notification
-                CreatedAt = DateTime.Now
-            };
-
-            await dbContext.VendorNotifications.AddAsync(vendorNotification);
-            await dbContext.SaveChangesAsync();
-        }
-
-        private async Task AddProjectHeadNotification(string projectHeadId, string content, string route)
-        {
-            var projectHeadNotification = new NotificationProjectHead
-            {
-                ProjectHeadId = projectHeadId,
-                Content = content,
-                Route = route, // Set the appropriate route for the project head notification
-                CreatedAt = DateTime.Now
-            };
-
-            await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
-            await dbContext.SaveChangesAsync();
-        }
-
 
 
         [HttpGet]
@@ -159,12 +103,12 @@ namespace VendorPortal.API.Controllers
             {
                 if (filterOn.Equals("title", StringComparison.OrdinalIgnoreCase))
                 {
-                    rfpsResult = rfpsResult.Where(x => x.Title.ToLower().Contains(filterVal.ToLower())); 
+                    rfpsResult = rfpsResult.Where(x => x.Title.ToLower().Contains(filterVal.ToLower()));
                 }
 
                 if (filterOn.Equals("category", StringComparison.OrdinalIgnoreCase))
                 {
-                    rfpsResult = rfpsResult.Where(x => x.VendorCategory.Name.ToLower().Contains(filterVal.ToLower())); 
+                    rfpsResult = rfpsResult.Where(x => x.VendorCategory.Name.ToLower().Contains(filterVal.ToLower()));
                 }
             }
 
@@ -217,6 +161,96 @@ namespace VendorPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] RFPUpdateDto rfpUpdateDto)
+        {
+            var rfpResult = await dbContext.RFPs.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (rfpResult != null)
+            {
+                rfpResult.EndDate = rfpUpdateDto.EndDate;
+
+                if (rfpUpdateDto.Document != null)
+                {
+                    ValidateFileUpload(rfpUpdateDto.Document);
+
+                    if (ModelState.IsValid)
+                    {
+                        bool del = Delete(rfpResult.DocumentPath);
+                        if (del)
+                        {
+                            string docPath = await Upload(rfpUpdateDto.Document);
+                            rfpResult.DocumentPath = docPath;
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(ModelState);
+                    }
+                }
+
+                await dbContext.SaveChangesAsync();
+                return Ok(rfpResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+
+        private async Task AddAdminNotification(string content, string route)
+        {
+            var adminRole = "Admin"; // Assuming the role name for admin is "Admin"
+
+            // Find the admin users with the specified role
+            var adminUsers = await userManager.GetUsersInRoleAsync(adminRole);
+
+            // Iterate through each admin user and send them the notification
+            foreach (var adminUser in adminUsers)
+            {
+                var adminNotification = new NotificationAdmin
+                {
+                    AdminId = adminUser.Id,
+                    Content = content,
+                    Route = route, // Set the appropriate route for the notification
+                    CreatedAt = DateTime.Now
+                };
+
+                await dbContext.AdminNotifications.AddAsync(adminNotification);
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
+
+
+        private async Task AddVendorNotification(string userId, string content, string route)
+        {
+            var vendorNotification = new NotificationVendor
+            {
+                UserId = userId,
+                Content = content,
+                Route = route, // Set the appropriate route for the project head notification
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.VendorNotifications.AddAsync(vendorNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
+        private async Task AddProjectHeadNotification(string projectHeadId, string content, string route)
+        {
+            var projectHeadNotification = new NotificationProjectHead
+            {
+                ProjectHeadId = projectHeadId,
+                Content = content,
+                Route = route, // Set the appropriate route for the project head notification
+                CreatedAt = DateTime.Now
+            };
+
+            await dbContext.NotificationsProjectHead.AddAsync(projectHeadNotification);
+            await dbContext.SaveChangesAsync();
+        }
+
         private async Task<string> Upload(IFormFile document)
         {
             var folder = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "RFPDocuments");
@@ -252,6 +286,18 @@ namespace VendorPortal.API.Controllers
             {
                 ModelState.AddModelError("file", "File size more than 10MB, please upload a smaller size file.");
             }
+        }
+
+        private bool Delete(string filePath)
+        {
+            if (filePath != null)
+            {
+                string[] files = filePath.Split("/");
+                string ExitingFile = Path.Combine(webHostEnvironment.ContentRootPath, "Files", "RFPDocuments", files[files.Length - 1]);
+                System.IO.File.Delete(ExitingFile);
+                return true;
+            }
+            return false;
         }
 
     }

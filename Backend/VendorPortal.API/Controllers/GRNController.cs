@@ -115,6 +115,20 @@ namespace VendorPortal.API.Controllers
             return BadRequest("Something went wrong");
         }
 
+        [HttpGet]
+        [Route("ProjectHead/{id:Guid}")]
+        public async Task<IActionResult> GetByProjectHeadId([FromRoute] string id)
+        {
+            var grnResult = await dbContext.GRNs.Include(x => x.PurchaseOrder).ThenInclude(x => x.Project).Where(x => x.PurchaseOrder.Project.ProjectHeadId == id).ToListAsync();
+
+            if (grnResult != null)
+            {
+                return Ok(grnResult);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
         [HttpPut]
         [Route("AcceptReject/{id:Guid}")]
         public async Task<IActionResult> AcceptReject([FromRoute] Guid id, [FromBody] GRNProjectHeadUpdateDto grnProjectHeadUpdateDto)
@@ -178,12 +192,8 @@ namespace VendorPortal.API.Controllers
 
                         if (ModelState.IsValid)
                         {
-                            bool del = Delete(grnResult.DocumentPath);
-                            if (del)
-                            {
-                                string docPath = await Upload(grnUpdateDto.Document);
-                                grnResult.DocumentPath = docPath;
-                            }
+                            string docPath = await Upload(grnUpdateDto.Document);
+                            grnResult.DocumentPath = docPath;
                         }
                         else
                         {

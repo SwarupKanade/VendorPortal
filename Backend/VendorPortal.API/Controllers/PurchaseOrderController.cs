@@ -78,6 +78,7 @@ namespace VendorPortal.API.Controllers
                     OrderNo = purchaseOrder.OrderNo,
                     VendorId = purchaseOrder.VendorId,
                     VendorName = purchaseOrder.Vendor.Name,
+                    OrganizationName = purchaseOrder.Vendor.OrganizationName,
                     ReleaseDate = purchaseOrder.ReleaseDate,
                     ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                     DocumentPath = purchaseOrder.DocumentPath,
@@ -117,6 +118,7 @@ namespace VendorPortal.API.Controllers
                         OrderNo = purchaseOrder.OrderNo,
                         VendorId = purchaseOrder.VendorId,
                         VendorName = purchaseOrder.Vendor.Name,
+                        OrganizationName = purchaseOrder.Vendor.OrganizationName,
                         ReleaseDate = purchaseOrder.ReleaseDate,
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         DocumentPath = purchaseOrder.DocumentPath,
@@ -160,6 +162,7 @@ namespace VendorPortal.API.Controllers
                         OrderNo = purchaseOrder.OrderNo,
                         VendorId = purchaseOrder.VendorId,
                         VendorName = purchaseOrder.Vendor.Name,
+                        OrganizationName = purchaseOrder.Vendor.OrganizationName,
                         ReleaseDate = purchaseOrder.ReleaseDate,
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         DocumentPath = purchaseOrder.DocumentPath,
@@ -199,6 +202,7 @@ namespace VendorPortal.API.Controllers
                         OrderNo = purchaseOrder.OrderNo,
                         VendorId = purchaseOrder.VendorId,
                         VendorName = purchaseOrder.Vendor.Name,
+                        OrganizationName = purchaseOrder.Vendor.OrganizationName,
                         ReleaseDate = purchaseOrder.ReleaseDate,
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         OrderAmount = purchaseOrder.OrderAmount,
@@ -232,6 +236,7 @@ namespace VendorPortal.API.Controllers
                         OrderNo = purchaseOrder.OrderNo,
                         VendorId = purchaseOrder.VendorId,
                         VendorName = purchaseOrder.Vendor.Name,
+                        OrganizationName = purchaseOrder.Vendor.OrganizationName,
                         ReleaseDate = purchaseOrder.ReleaseDate,
                         ExpectedDelivery = purchaseOrder.ExpectedDelivery,
                         OrderAmount = purchaseOrder.OrderAmount,
@@ -314,12 +319,8 @@ namespace VendorPortal.API.Controllers
 
                         if (ModelState.IsValid)
                         {
-                            bool del = Delete(purchaseOrderResult.DocumentPath);
-                            if (del)
-                            {
-                                string docPath = await Upload(purchaseOrderUpdateDto.Document);
-                                purchaseOrderResult.DocumentPath = docPath;
-                            }
+                            string docPath = await Upload(purchaseOrderUpdateDto.Document);
+                            purchaseOrderResult.DocumentPath = docPath;
                         }
                         else
                         {
