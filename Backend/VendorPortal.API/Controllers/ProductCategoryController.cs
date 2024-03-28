@@ -57,6 +57,47 @@ namespace VendorPortal.API.Controllers
         }
 
         [HttpGet]
+        [Route("Parent")]
+        public async Task<IActionResult> GetRoot()
+        {
+            var productCategoryResult = await dbContext.ProductCategories.Where(x => x.IsRoot).ToListAsync();
+
+            if (productCategoryResult != null)
+            {
+                List<ProductCategory> allCategory = new List<ProductCategory>();
+                foreach (var item in productCategoryResult)
+                {
+                    var productCategory = await dbContext.ProductCategories.Where(x => x.ParentCategoryId == item.Id).ToListAsync();
+
+                    if (productCategory.Any())
+                    {
+                        allCategory.Add(item);
+                    }
+                }
+
+                return Ok(allCategory);
+
+            }
+            
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("Category/{id:Guid}")]
+        public async Task<IActionResult> GetSubCategory([FromRoute] Guid id)
+        {
+            var productCategoryResult = await dbContext.ProductCategories.Where(x => x.ParentCategoryId == id).ToListAsync();
+
+            if (productCategoryResult != null)
+            {
+                return Ok(productCategoryResult);
+            }
+
+            return BadRequest("Something went wrong");
+
+        }
+
+        [HttpGet]
         [Route("{id:Guid}")]
         public async Task<IActionResult> Get([FromRoute] Guid id)
         {

@@ -149,8 +149,6 @@ namespace VendorPortal.API.Controllers
                 productResult.UnitType = productUpdateDto.UnitType;
                 productResult.Size = productUpdateDto.Size;
                 productResult.Specification = productUpdateDto.Specification;
-                productResult.CategoryId = productUpdateDto.ProductCategoryId;
-                productResult.SubCategoryId = productUpdateDto.SubCategoryId;
 
                 if (productUpdateDto.ImageFile != null)
                 {
