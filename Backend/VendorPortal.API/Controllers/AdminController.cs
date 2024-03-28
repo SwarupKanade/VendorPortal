@@ -5,6 +5,7 @@ using VendorPortal.API.Models.Domain;
 using Microsoft.EntityFrameworkCore;
 using VendorPortal.API.Models.DTO.AdminDto;
 using VendorPortal.API.Models.DTO;
+using VendorPortal.API.Data;
 
 namespace VendorPortal.API.Controllers
 {
@@ -12,10 +13,12 @@ namespace VendorPortal.API.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
+        private readonly VendorPortalDbContext dbContext;
         private readonly UserManager<UserProfile> userManager;
 
-        public AdminController(UserManager<UserProfile> userManager)
+        public AdminController(VendorPortalDbContext dbContext, UserManager<UserProfile> userManager)
         {
+            this.dbContext = dbContext;
             this.userManager = userManager;
         }
 
@@ -122,6 +125,40 @@ namespace VendorPortal.API.Controllers
                 }
 
                 return Ok(allAdmins);
+            }
+
+            return BadRequest("Something went wrong");
+        }
+
+        [HttpGet]
+        [Route("AllUsers")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var userResult = await dbContext.Users.ToListAsync();
+            if (userResult != null)
+            {
+                List<UserResponseDto> allUsers = new List<UserResponseDto>();
+
+                foreach (var singleUser in userResult)
+                {
+                    var admin = new UserResponseDto
+                    {
+                        Id = singleUser.Id,
+                        Name = singleUser.Name,
+                        UserName = singleUser.UserName,
+                        OrganizationName = singleUser.OrganizationName,
+                        Address = singleUser.Address,
+                        City = singleUser.City,
+                        State = singleUser.State,
+                        Pincode = singleUser.Pincode,
+                        Email = singleUser.Email,
+                        PhoneNumber = singleUser.PhoneNumber,
+                    };
+
+                    allUsers.Add(admin);
+                }
+
+                return Ok(allUsers);
             }
 
             return BadRequest("Something went wrong");
