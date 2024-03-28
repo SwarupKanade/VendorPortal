@@ -209,6 +209,7 @@ namespace VendorPortal.API.Controllers
                         IsAccepted = purchaseOrder.IsAccepted,
                         DocumentPath = purchaseOrder.DocumentPath,
                         Project = purchaseOrder.Project,
+                        Comment = purchaseOrder.Comment,
                     };
                     allResult.Add(newpurchaseOrder);
                 }
@@ -243,6 +244,7 @@ namespace VendorPortal.API.Controllers
                         IsAccepted = purchaseOrder.IsAccepted,
                         DocumentPath = purchaseOrder.DocumentPath,
                         Project = purchaseOrder.Project,
+                        Comment = purchaseOrder.Comment,
                     };
                     allResult.Add(newpurchaseOrder);
                 }

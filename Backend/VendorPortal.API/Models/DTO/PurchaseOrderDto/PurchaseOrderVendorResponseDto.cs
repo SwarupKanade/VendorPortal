@@ -15,6 +15,7 @@ namespace VendorPortal.API.Models.DTO.PurchaseOrderVendorResponseDto
         public int OrderAmount { get; set; }
         public bool? IsAccepted { get; set; }
         public Project Project { get; set; }
+        public string Comment { get; set; }
 
     }
 }
